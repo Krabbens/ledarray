@@ -1,10 +1,17 @@
 #include <Arduino.h>
+#include "Debug.h"
+#include "Wireless.h"
 
+#define D_LOG
 
 void setup() {
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  delay(4000);
+
+  Debug::info("Starting...");
+
+  Wireless wireless;
 }
 
 void loop() {
-
 }
