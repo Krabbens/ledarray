@@ -15,6 +15,10 @@ public:
 
     void connectToNetwork();
     void startAP();
+
+    bool isConnected() {
+        return WiFi.status() == WL_CONNECTED;
+    }
     
 private:
     Preferences preferences;
@@ -41,7 +45,6 @@ Wireless::Wireless() {
 
 Wireless::~Wireless() {
     Debug::info("Wireless object destroyed.");
-    preferences.end();
     if (server) {
         delete server;
     }
@@ -69,6 +72,7 @@ void Wireless::connectToNetwork() {
         }
     }
     Debug::info("Connected to network.");
+    preferences.end();
 }
 
 void Wireless::startAP() {
