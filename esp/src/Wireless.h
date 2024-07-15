@@ -15,6 +15,8 @@ public:
     Wireless();
     ~Wireless();
 
+    void startAP();
+
 private:
     Preferences preferences;
     DNSServer dnsServer;
@@ -36,36 +38,40 @@ Wireless::Wireless() {
             retries++;
             if (retries > 6) {
                 Debug::error("Failed to connect to last known network.");
-                goto ap;
+                startAP();
             }
         }
     }
     else {
-        ap:
-        Debug::info("Starting AP...");
-        // start AP
-        WiFi.softAP("ledarray");
-        dnsServer.start(53, "*", WiFi.softAPIP());
-        server = new AsyncWebServer(80);
-        server->on("/get", HTTP_GET, [&] (AsyncWebServerRequest *request) {
-            String msg_ssid, msg_password;
-            if (request->hasParam("ssid") && request->hasParam("password")) {
-                Debug::info("SSID and password provided.");
-                msg_ssid = request->getParam("ssid")->value();
-                msg_password = request->getParam("password")->value();
-                preferences.putString("ssid", msg_ssid);
-                preferences.putString("password", msg_password);
-                ESP.restart();
-            } else {
-                Debug::error("No ssid or password provided.");
-            }
-            request->send(200, "text/plain", "OK");
-        });
-        server->begin();
+        Debug::info("No last known network found.");
+        startAP();
     }
 }
 
 
 Wireless::~Wireless() {
     preferences.end();
+}
+
+void Wireless::startAP() {
+    Debug::info("Starting AP...");
+    // start AP
+    WiFi.softAP("ledarray");
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    server = new AsyncWebServer(80);
+    server->on("/get", HTTP_GET, [&] (AsyncWebServerRequest *request) {
+        String msg_ssid, msg_password;
+        if (request->hasParam("ssid") && request->hasParam("password")) {
+            Debug::info("SSID and password provided.");
+            msg_ssid = request->getParam("ssid")->value();
+            msg_password = request->getParam("password")->value();
+            preferences.putString("ssid", msg_ssid);
+            preferences.putString("password", msg_password);
+            ESP.restart();
+        } else {
+            Debug::error("No ssid or password provided.");
+        }
+        request->send(200, "text/plain", "OK");
+    });
+    server->begin();
 }
