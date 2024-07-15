@@ -12,7 +12,14 @@ public:
     static void error(String message);
     static void warn(String message);
     static void info(String message);
+    static void raw(String message);
 };
+
+void Debug::init() {
+    #ifdef D_LOG
+    Serial.begin(115200);
+    #endif
+}
 
 void Debug::log(String message) {
     #ifdef D_LOG
@@ -35,5 +42,11 @@ void Debug::warn(String message) {
 void Debug::info(String message) {
     #ifdef D_LOG
     Serial.println("INFO: " + message);
+    #endif
+}
+
+void Debug::raw(String message) {
+    #ifdef D_LOG
+    Serial.print(message);
     #endif
 }
