@@ -1,17 +1,30 @@
 #include <Arduino.h>
+#include <WiFiClientSecure.h>
 #include "Debug.h"
 #include "Wireless.h"
+#include "MQTT.h"
 
 #define D_LOG
 
+WiFiClientSecure* wifiClient;
+Wireless* wireless;
+MQTT* mqtt;
+
 void setup() {
-  Serial.begin(115200);
-  delay(4000);
-
+  Debug::init();
   Debug::info("Starting...");
-
-  Wireless* wireless = new Wireless();
+  wifiClient = new WiFiClientSecure();
+  wireless = new Wireless();
+  while(!wireless->isConnected()) {
+    delay(1000);
+  }
+  mqtt = new MQTT(wifiClient);
+  
+  mqtt->connectToBroker();
+  mqtt->subscribe("esp32/ledarray");
+  mqtt->publish("esp32/ledarray", "Hello from ESP32!");
 }
 
 void loop() {
+  mqtt->loop();
 }
