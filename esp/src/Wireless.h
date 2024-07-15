@@ -15,8 +15,9 @@ public:
     Wireless();
     ~Wireless();
 
+    void connectToNetwork();
     void startAP();
-
+    
 private:
     Preferences preferences;
     DNSServer dnsServer;
@@ -27,20 +28,8 @@ Wireless::Wireless() {
     Debug::info("Wireless object created.");
     preferences.begin("wireless", false);
     if (preferences.isKey("ssid")) {
-        //try to connect to the last known network
-        Debug::info("Connecting to last known network...");
-        int retries = 0;
-        auto status = WiFi.begin(preferences.getString("ssid").c_str(), preferences.getString("password").c_str());
-        while (status != WL_CONNECTED) {
-            delay(500);
-            Debug::info("Connecting...");
-            status = WiFi.status();
-            retries++;
-            if (retries > 6) {
-                Debug::error("Failed to connect to last known network.");
-                startAP();
-            }
-        }
+        Debug::info("Last known network found.");
+        connectToNetwork();
     }
     else {
         Debug::info("No last known network found.");
@@ -51,6 +40,22 @@ Wireless::Wireless() {
 
 Wireless::~Wireless() {
     preferences.end();
+}
+
+void Wireless::connectToNetwork() {
+    Debug::info("Connecting to network...");
+    WiFi.begin(preferences.getString("ssid").c_str(), preferences.getString("password").c_str());
+    int retries = 0;
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Debug::info("Connecting...");
+        retries++;
+        if (retries > 6) {
+            Debug::error("Failed to connect to network.");
+            startAP();
+        }
+    }
+    Debug::info("Connected to network.");
 }
 
 void Wireless::startAP() {
