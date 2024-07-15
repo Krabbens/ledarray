@@ -10,7 +10,7 @@ void setup() {
 
   Debug::info("Starting...");
 
-  Wireless wireless;
+  Wireless* wireless = new Wireless();
 }
 
 void loop() {

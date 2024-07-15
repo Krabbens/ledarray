@@ -8,8 +8,6 @@
 #include "ESPAsyncWebServer.h"
 #include "Debug.h"
 
-const char* PARAM_MESSAGE = "message";
-
 class Wireless {
 public:
     Wireless();
@@ -22,6 +20,9 @@ private:
     Preferences preferences;
     DNSServer dnsServer;
     AsyncWebServer* server;
+    String msg_ssid, msg_password;
+
+    bool serverRunning = false;
 };
 
 Wireless::Wireless() {
@@ -39,20 +40,32 @@ Wireless::Wireless() {
 
 
 Wireless::~Wireless() {
+    Debug::info("Wireless object destroyed.");
     preferences.end();
+    if (server) {
+        delete server;
+    }
 }
 
 void Wireless::connectToNetwork() {
     Debug::info("Connecting to network...");
+    String ssid = preferences.getString("ssid");
+    String password = preferences.getString("password");
+    Debug::info("SSID: " + ssid);
+    Debug::info("Password: " + password);
     WiFi.begin(preferences.getString("ssid").c_str(), preferences.getString("password").c_str());
     int retries = 0;
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+        delay(1000);
         Debug::info("Connecting...");
         retries++;
         if (retries > 6) {
             Debug::error("Failed to connect to network.");
+            if (serverRunning) {
+                return;
+            }
             startAP();
+            return;
         }
     }
     Debug::info("Connected to network.");
@@ -60,22 +73,34 @@ void Wireless::connectToNetwork() {
 
 void Wireless::startAP() {
     Debug::info("Starting AP...");
-    // start AP
+    serverRunning = true;
     WiFi.softAP("ledarray");
     dnsServer.start(53, "*", WiFi.softAPIP());
     server = new AsyncWebServer(80);
+    
+    /*
+        Create listener for new network credentials.
+    */
     server->on("/get", HTTP_GET, [&] (AsyncWebServerRequest *request) {
-        String msg_ssid, msg_password;
+        
         if (request->hasParam("ssid") && request->hasParam("password")) {
             Debug::info("SSID and password provided.");
             msg_ssid = request->getParam("ssid")->value();
             msg_password = request->getParam("password")->value();
+            Debug::info("SSID: " + msg_ssid);
+            Debug::info("Password: " + msg_password);
             preferences.putString("ssid", msg_ssid);
             preferences.putString("password", msg_password);
-            ESP.restart();
+            
+            connectToNetwork();
         } else {
             Debug::error("No ssid or password provided.");
         }
+        request->send(200, "text/plain", "OK");
+    });
+    server->on("/status", HTTP_GET, [&] (AsyncWebServerRequest *request) {
+        Debug::info("ESP32 IP on the WiFi network: ");
+        Debug::info(WiFi.localIP().toString());
         request->send(200, "text/plain", "OK");
     });
     server->begin();
