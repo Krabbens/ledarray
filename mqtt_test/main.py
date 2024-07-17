@@ -16,6 +16,6 @@ client.on_message = on_message
 
 client.connect("5686adbdc3644dca8e63a851e72c3b21.s1.eu.hivemq.cloud", 8883, 60)
 
-client.publish("esp32/ledarray", "Hello from Python!")
+client.publish("esp32/alive_status", 1)
 
 client.loop_forever()
