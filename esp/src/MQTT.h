@@ -38,9 +38,7 @@ emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
 
 class MQTT {
 public:
-    MQTT(WiFiClientSecure* wifiClient,
-         void (*callback)(char*, byte*, unsigned int)
-    );
+    MQTT(WiFiClientSecure* wifiClient);
     ~MQTT();
 
     void connectToBroker();
@@ -55,9 +53,7 @@ private:
     static void callback(char* topic, byte* payload, unsigned int length);
 };
 
-MQTT::MQTT(WiFiClientSecure* wifiClient,
-              void (*callback)(char*, byte*, unsigned int) = MQTT::callback
-    ) : client(*wifiClient) {
+MQTT::MQTT(WiFiClientSecure* wifiClient) : client(*wifiClient) {
     Debug::info("MQTT object created.");
     msg_broker = "5686adbdc3644dca8e63a851e72c3b21.s1.eu.hivemq.cloud";
     msg_port = "8883";
@@ -65,6 +61,7 @@ MQTT::MQTT(WiFiClientSecure* wifiClient,
     msg_password = "_ledarray_nugget";
     wifiClient->setCACert(root_ca);
     client.setServer(msg_broker, atoi(msg_port));
+
     client.setCallback(callback);
 }
 
@@ -98,6 +95,8 @@ void MQTT::subscribe(const char* topic) {
     }
 }
 
+extern MQTT* mqtt;
+
 void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     Debug::raw("MQTT: Message arrived [");
     Debug::raw(topic);
@@ -107,4 +106,5 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     }
     Debug::raw("\n");
     
+    mqtt->publish("esp32/alive_status", "1");
 }
