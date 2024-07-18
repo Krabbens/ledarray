@@ -72,6 +72,30 @@ class _PreConnectionRouterState extends State<PreConnectionRouter> {
             );
           }
 
+          if (_internetStatus == InternetStatus.esp) {
+            return SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 64),
+                    const Text('Connected to ESP32 WiFi'),
+                    const Text('Do you want to configure the board?'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/permission', (route) => false);
+                        });
+                      },
+                      child: const Text('Configure'),
+                    ),
+                  ],
+                ));
+          }
+
           if (_mqttStatus == ConnectivityStatus.unknown) {
             return const LoadingBox(text: 'Launching MQTT');
           }
