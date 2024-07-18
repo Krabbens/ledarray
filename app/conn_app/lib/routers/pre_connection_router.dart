@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:conn_app/views/permission_view.dart';
+import 'package:conn_app/views/loading_box.dart';
 import 'package:conn_app/controllers/mqtt_controller.dart';
 import 'package:conn_app/controllers/internet_controller.dart';
 import 'package:conn_app/enums/connectivity_status.dart';
@@ -63,17 +63,7 @@ class _PreConnectionRouterState extends State<PreConnectionRouter> {
       body: Builder(
         builder: (context) {
           if (_internetStatus == InternetStatus.unknown) {
-            return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Grabbing internet status'),
-                  ],
-                ));
+            return const LoadingBox(text: 'Checking internet connection');
           }
 
           if (_internetStatus == InternetStatus.noInternet) {
@@ -83,45 +73,15 @@ class _PreConnectionRouterState extends State<PreConnectionRouter> {
           }
 
           if (_mqttStatus == ConnectivityStatus.unknown) {
-            return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Launching MQTT'),
-                  ],
-                ));
+            return const LoadingBox(text: 'Launching MQTT');
           }
 
           if (_mqttStatus == ConnectivityStatus.disconnected) {
-            return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Connecting to MQTT'),
-                  ],
-                ));
+            return const LoadingBox(text: 'Connecting to MQTT');
           }
 
           if (_espStatus == ConnectivityStatus.unknown) {
-            return SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Checking ESP32 status'),
-                  ],
-                ));
+            return const LoadingBox(text: 'Checking ESP32 status');
           }
 
           if (_espStatus == ConnectivityStatus.disconnected) {
