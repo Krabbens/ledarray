@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:conn_app/enums/internet_status.dart';
