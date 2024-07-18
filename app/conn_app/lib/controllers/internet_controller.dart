@@ -15,7 +15,7 @@ class InternetController {
 
   final _info = NetworkInfo();
 
-  final StreamController<InternetStatus> _connectionStatusController = StreamController<InternetStatus>();
+  final StreamController<InternetStatus> _connectionStatusController = StreamController<InternetStatus>.broadcast();
   Stream<InternetStatus> get connectionStatus => _connectionStatusController.stream;
 
   InternetController() {
@@ -48,8 +48,11 @@ class InternetController {
     if (result.contains(ConnectivityResult.wifi)) {
 
       final wifiName = await _info.getWifiName();
+
       if (wifiName != null && wifiName.contains('ledarray')) {
         status = InternetStatus.esp;
+        _connectionStatusController.add(status);
+        return;
       }
 
       try {

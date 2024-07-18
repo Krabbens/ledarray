@@ -16,13 +16,13 @@ class MQTTController {
 
   late MqttServerClient client;
 
-  final StreamController<String> _messagesController = StreamController<String>();
+  final StreamController<String> _messagesController = StreamController<String>.broadcast();
   Stream<String> get messages => _messagesController.stream;
 
-  final StreamController<ConnectivityStatus> _connectionStatusController = StreamController<ConnectivityStatus>();
+  final StreamController<ConnectivityStatus> _connectionStatusController = StreamController<ConnectivityStatus>.broadcast();
   Stream<ConnectivityStatus> get connectionStatus => _connectionStatusController.stream;
 
-  final StreamController<ConnectivityStatus> _espControllerStatus = StreamController<ConnectivityStatus>();
+  final StreamController<ConnectivityStatus> _espControllerStatus = StreamController<ConnectivityStatus>.broadcast();
   Stream<ConnectivityStatus> get espStatus => _espControllerStatus.stream;
 
   ConnectivityStatus _isConnected = ConnectivityStatus.disconnected;
