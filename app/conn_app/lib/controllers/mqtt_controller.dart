@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -30,6 +29,8 @@ class MQTTController {
 
   int _lastRecvMessage = -1;
 
+  late Timer? _timer;
+
   MQTTController(this._topic) {
     client = MqttServerClient(server, clientIdentifier);
     client.port = port;
@@ -41,7 +42,7 @@ class MQTTController {
     client.onUnsubscribed = onUnsubscribed;
     client.logging(on: true);
 
-    Timer.periodic(const Duration(seconds: 15), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 15), (timer) {
       if (_isConnected == ConnectivityStatus.disconnected) {
         connect();
       }
@@ -55,6 +56,10 @@ class MQTTController {
       print('Exception: $e');
       client.disconnect();
     }
+  }
+
+  void close() {
+    client.disconnect();
   }
 
   void disconnect() {
@@ -116,6 +121,7 @@ class MQTTController {
   }
 
   void dispose() {
+    _timer!.cancel();
     _messagesController.close();
     _connectionStatusController.close();
     client.disconnect();
