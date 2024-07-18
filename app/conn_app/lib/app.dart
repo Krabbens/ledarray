@@ -6,6 +6,8 @@ import 'views/permission_view.dart';
 import 'views/pre_connection_view.dart';
 
 class App extends StatelessWidget {
+  const App({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

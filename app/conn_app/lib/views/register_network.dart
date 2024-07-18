@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:conn_app/controllers/internet_controller.dart';
 
 import 'package:conn_app/enums/internet_status.dart';
-import 'package:conn_app/enums/connectivity_status.dart';
 import 'package:conn_app/views/loading_box.dart';
 import 'package:conn_app/views/network_register_form.dart';
 

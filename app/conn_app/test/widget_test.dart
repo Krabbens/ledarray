@@ -13,7 +13,7 @@ import 'package:conn_app/views/pre_connection_view.dart';
 void main() {
   testWidgets('App should start with PreConnectionRouter', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(App());
+    await tester.pumpWidget(const App());
 
     // Verify that PreConnectionRouter is the first widget
     expect(find.byType(PreConnectionView), findsOneWidget);

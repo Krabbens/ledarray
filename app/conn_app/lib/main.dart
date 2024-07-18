@@ -3,6 +3,6 @@ import 'app.dart';
 
 void main() {
   return runApp(
-    App(),
+    const App(),
   );
 }
