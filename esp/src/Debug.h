@@ -18,6 +18,7 @@ public:
 void Debug::init() {
     #ifdef D_LOG
     Serial.begin(115200);
+    delay(4000);
     #endif
 }
 
