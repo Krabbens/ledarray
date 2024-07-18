@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:permission_handler/permission_handler.dart';
@@ -10,15 +12,33 @@ class PermissionView extends StatefulWidget {
 }
 
 class _PermissionViewState extends State<PermissionView> {
+  bool _isGranted = false;
+  Map<Permission, PermissionStatus> status = {};
+
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (status[Permission.location] == PermissionStatus.granted) {
+        setState(() {
+          _isGranted = true;
+        });
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   void _requestPermissions() async {
-    final statuses = await [
+    status = await [
       Permission.location,
       Permission.locationAlways,
       Permission.locationWhenInUse,
@@ -27,15 +47,13 @@ class _PermissionViewState extends State<PermissionView> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Permission.location.status,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          final status = snapshot.data as PermissionStatus;
-
-          WidgetsBinding.instance.addPostFrameCallback((_){
-            if (status.isGranted) {
-              Navigator.pushNamedAndRemoveUntil(context, '/pre-connection', (route) => false);
+    return Builder(
+      builder: (context) {
+        if (_isGranted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (status[Permission.location] == PermissionStatus.granted) {
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/pre-connection', (route) => false);
             }
           });
         }
