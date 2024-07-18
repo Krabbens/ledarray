@@ -7,7 +7,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:conn_app/app.dart';
-import 'package:conn_app/routers/pre_connection_router.dart';
+import 'package:conn_app/views/pre_connection_view.dart';
 
 
 void main() {
@@ -16,6 +16,6 @@ void main() {
     await tester.pumpWidget(App());
 
     // Verify that PreConnectionRouter is the first widget
-    expect(find.byType(PreConnectionRouter), findsOneWidget);
+    expect(find.byType(PreConnectionView), findsOneWidget);
   });
 }
