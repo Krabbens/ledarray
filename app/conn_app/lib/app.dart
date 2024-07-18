@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'views/scan_wifi.dart';
+import 'views/register_network.dart';
 import 'views/permission_view.dart';
 
-import 'routers/pre_connection_router.dart';
+import 'views/pre_connection_view.dart';
 
 class App extends StatelessWidget {
   @override
@@ -14,11 +14,11 @@ class App extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
-        '/pre-connection': (context) => const PreConnectionRouter(),
-        '/scan-wifi': (context) => const ScanWifi(),
+        '/pre-connection': (context) => const PreConnectionView(),
+        '/scan-wifi': (context) => const RegisterNetwork(),
         '/permission': (context) => const PermissionView(),
       },
-      home: const PreConnectionRouter(),
+      home: const PermissionView(),
     );
   }
 }

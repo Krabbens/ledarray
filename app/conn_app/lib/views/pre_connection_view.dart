@@ -5,14 +5,14 @@ import 'package:conn_app/controllers/internet_controller.dart';
 import 'package:conn_app/enums/connectivity_status.dart';
 import 'package:conn_app/enums/internet_status.dart';
 
-class PreConnectionRouter extends StatefulWidget {
-  const PreConnectionRouter({super.key});
+class PreConnectionView extends StatefulWidget {
+  const PreConnectionView({super.key});
 
   @override
-  State<PreConnectionRouter> createState() => _PreConnectionRouterState();
+  State<PreConnectionView> createState() => _PreConnectionViewState();
 }
 
-class _PreConnectionRouterState extends State<PreConnectionRouter> {
+class _PreConnectionViewState extends State<PreConnectionView> {
   late MQTTController _controller;
   late InternetController _internetController;
 
@@ -87,7 +87,7 @@ class _PreConnectionRouterState extends State<PreConnectionRouter> {
                       onPressed: () {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/permission', (route) => false);
+                              '/scan-wifi', (route) => false);
                         });
                       },
                       child: const Text('Configure'),
