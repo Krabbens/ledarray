@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
-import 'home.dart';
+
+import 'views/scan_wifi.dart';
+import 'views/permission_view.dart';
+
+import 'routers/pre_connection_router.dart';
 
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Home(),
+      title: 'Wifi Scanner',
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-          useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
+      routes: {
+        '/scan-wifi': (context) => const ScanWifi(),
+        '/permission': (context) => const PermissionView(),
+      },
+      home: const PreConnectionRouter(),
     );
   }
 }
+
+
