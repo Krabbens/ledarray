@@ -35,7 +35,7 @@ class _PermissionViewState extends State<PermissionView> {
 
           WidgetsBinding.instance.addPostFrameCallback((_){
             if (status.isGranted) {
-              Navigator.pushNamedAndRemoveUntil(context, '/scan-wifi', (route) => false);
+              Navigator.pushNamedAndRemoveUntil(context, '/pre-connection', (route) => false);
             }
           });
         }
