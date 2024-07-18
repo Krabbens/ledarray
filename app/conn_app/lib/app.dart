@@ -14,6 +14,7 @@ class App extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       routes: {
+        '/pre-connection': (context) => const PreConnectionRouter(),
         '/scan-wifi': (context) => const ScanWifi(),
         '/permission': (context) => const PermissionView(),
       },
