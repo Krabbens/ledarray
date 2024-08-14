@@ -38,9 +38,6 @@ void setup()
   // 10 lines of 40 leds, 30 frames, 4 seconds of animation
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
-  FastLED.addLeds<SK9822, 11, 13, BGR>(leds_fb_test, NUM_LEDS);
-  FastLED.addLeds<SK9822, 10, 12, BGR>(leds_fb_test, NUM_LEDS, NUM_LEDS);
-
   ledArray = new LedArray();
 
   // rainbow animation 120 frames of changing color of all leds
