@@ -12,7 +12,13 @@ public:
     static void error(String message);
     static void warn(String message);
     static void info(String message);
-    static void raw(String message);
+
+    template <typename T>
+    static void raw(T message) {
+        #ifdef D_LOG
+        Serial.print(message);
+        #endif
+    }
 };
 
 void Debug::init() {
@@ -43,11 +49,5 @@ void Debug::warn(String message) {
 void Debug::info(String message) {
     #ifdef D_LOG
     Serial.println("INFO: " + message);
-    #endif
-}
-
-void Debug::raw(String message) {
-    #ifdef D_LOG
-    Serial.print(message);
     #endif
 }

@@ -57,7 +57,11 @@ class _PreConnectionViewState extends State<PreConnectionView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Led Array'),
+        title: const Text(
+          'Led Array',
+          style: TextStyle(color: Colors.white),
+          
+        ),
         backgroundColor: Colors.deepPurpleAccent,
       ),
       body: Builder(

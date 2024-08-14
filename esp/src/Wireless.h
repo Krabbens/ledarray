@@ -63,9 +63,9 @@ void Wireless::connectToNetwork() {
     int retries = 0;
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
-        Debug::info("Connecting...");
+        Debug::info("Connecting... try: " + String(retries));
         retries++;
-        if (retries > 6) {
+        if (retries > 10) {
             Debug::error("Failed to connect to network.");
             if (serverRunning) {
                 return;
