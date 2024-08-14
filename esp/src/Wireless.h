@@ -34,6 +34,11 @@ private:
 Wireless::Wireless() {
     Debug::info("Wireless object created.");
     preferences.begin("wireless", false);
+
+    //
+    preferences.putString("ssid", "TheRedZone");
+    preferences.putString("password", "klecha@71");
+
     //clearCredentials();
     if (preferences.isKey("ssid")) {
         Debug::info("Last known network found.");

@@ -1,6 +1,7 @@
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include "Debug.h"
+#include "Frame.h"
 
 static const char *root_ca PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
@@ -101,10 +102,34 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     Debug::raw("MQTT: Message arrived [");
     Debug::raw(topic);
     Debug::raw("] ");
-    for (int i = 0; i < length; i++) {
-        Debug::raw(String((char)payload[i]));
-    }
-    Debug::raw("\n");
     
-    mqtt->publish("esp32/alive_status", "1");
+    // Sprawdzenie, czy wiadomość jest wystarczająco długa, aby zawierać ramkę
+    if (length < sizeof(Frame)) {
+        Debug::raw("Error: Payload too short to contain a Frame\n");
+        return;
+    }
+    
+    // Odczytanie ramki
+    Frame* frame = (Frame*)payload;
+    switch (frame->type) {
+        case animation:
+            Debug::raw("Frame type: animation\n");
+            // Tutaj przetwarzanie zawartości wiadomości typu "animation"
+            break;
+        case check_alive:
+            Debug::raw("Frame type: check_alive\n");
+            // Tutaj przetwarzanie zawartości wiadomości typu "check_alive"
+            break;
+        case alive_status:
+            Debug::raw("Frame type: alive_status\n");
+            // Tutaj przetwarzanie zawartości wiadomości typu "alive_status"
+            break;
+        case ready:
+            Debug::raw("Frame type: ready\n");
+            // Tutaj przetwarzanie zawartości wiadomości typu "ready"
+            break;
+        default:
+            Debug::raw("Unknown Frame type\n");
+            break;
+    }
 }
