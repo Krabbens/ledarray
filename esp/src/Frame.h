@@ -5,6 +5,7 @@ enum FrameType{
     check_alive = 1,
     alive_status = 2,
     ready = 3,
+    buffer_size = 4
 };
 
 struct Frame

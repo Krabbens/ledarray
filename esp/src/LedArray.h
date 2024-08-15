@@ -4,8 +4,9 @@
 
 #define NUM_LEDS 40
 #define ALL_LEDS NUM_LEDS * 10
-#define FRAMES_PER_SEC 30
+#define FRAMES_PER_SEC 300
 #define NUM_LINES 10
+#define SEC_IN_BUFFER 4
 
 const int clockPin = 4;
 const int dataPins[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
@@ -13,7 +14,7 @@ const int dataPins[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
 class LedArray
 {
 public:
-    LedArray();
+    LedArray(void (*bufferCallback)());
     ~LedArray();
 
     void fillBuffer(CRGB *input); // fills current buffer with info from input
@@ -31,6 +32,8 @@ private:
     // CLEDController* controller_2;
 
     CLEDController* controllers[NUM_LINES];
+
+    void (*swapBufferCallback)();
 };
 
 LedArray::~LedArray()
@@ -39,10 +42,10 @@ LedArray::~LedArray()
     free(leds_bb);
 }
 
-LedArray::LedArray()
+LedArray::LedArray(void (*bufferCallback)())
 {
-    leds_fb = (CRGB*)malloc(sizeof(CRGB) * ALL_LEDS * 4 * FRAMES_PER_SEC);
-    leds_bb = (CRGB*)malloc(sizeof(CRGB) * ALL_LEDS * 4 * FRAMES_PER_SEC);
+    leds_fb = (CRGB*)malloc(sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
+    leds_bb = (CRGB*)malloc(sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
     buffer_ptr = leds_bb;
 
     // controller_1 = &FastLED.addLeds<SK9822, 11, 13, BGR>(buffer_ptr, NUM_LEDS);
@@ -60,6 +63,8 @@ LedArray::LedArray()
     controllers[9] = &FastLED.addLeds<SK9822, 9, clockPin, BGR>(buffer_ptr + NUM_LEDS * 9, NUM_LEDS);
 
     FastLED.setBrightness(10);
+
+    swapBufferCallback = bufferCallback;
 }
 
 void LedArray::fillBuffer(CRGB *leds)
@@ -71,13 +76,14 @@ void LedArray::fillBuffer(CRGB *leds)
 void LedArray::swapBuffer()
 {
     buffer_ptr = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
+    swapBufferCallback();
 }
 
 void LedArray::nextFrame()
 {
-    Debug::raw(" INFO: Next frame: ");
-    Debug::raw(led_index);
-    Debug::raw("\n");
+    //Debug::raw(" INFO: Next frame: ");
+    //Debug::raw(led_index);
+    //Debug::raw("\n");
     FastLED.show();
     buffer_ptr = leds_fb + ALL_LEDS * led_index; // ALL_LEDS * 4 * FRAMES_PER_SEC
     
@@ -90,7 +96,7 @@ void LedArray::nextFrame()
         controllers[i]->setLeds(buffer_ptr + NUM_LEDS * i, NUM_LEDS);
     }
 
-    if (led_index == FRAMES_PER_SEC * 4)
+    if (led_index == FRAMES_PER_SEC * SEC_IN_BUFFER)
     {
         led_index = 0;
         swapBuffer();

@@ -2,6 +2,7 @@
 #include <WiFiClientSecure.h>
 #include "Debug.h"
 #include "Frame.h"
+#include "LedArray.h"
 
 static const char *root_ca PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
@@ -44,6 +45,7 @@ public:
 
     void connectToBroker();
     void publish(const char* topic, const char* payload);
+    void publish(const char* topic, byte* payload, unsigned int len);
     void subscribe(const char* topic);
     void loop() {
         client.loop();
@@ -87,6 +89,13 @@ void MQTT::connectToBroker() {
 void MQTT::publish(const char* topic, const char* payload) {
     if (client.connected()) {
         client.publish(topic, payload);
+        Debug::info(payload);
+    }
+}
+
+void MQTT::publish(const char* topic, byte* payload, unsigned int len){
+    if (client.connected()) {
+        client.publish(topic, payload, len);
     }
 }
 
@@ -126,6 +135,10 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             break;
         case ready:
             Debug::raw("Frame type: ready\n");
+            // Tutaj przetwarzanie zawartości wiadomości typu "ready"
+            break;
+        case buffer_size:
+            Debug::raw("Frame type: buffer_size\n");
             // Tutaj przetwarzanie zawartości wiadomości typu "ready"
             break;
         default:
