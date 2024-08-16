@@ -37,19 +37,16 @@ void setup()
   // mqtt->connectToBroker();
   // mqtt->subscribe("esp32/check_alive");
 
-  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
+  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
   // 10 lines of 40 leds, 30 frames, 4 seconds of animation
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
   ledArray = new LedArray();
 
-  // rainbow animation 120 frames of changing color of all leds
-  for (int i = 0; i < 120; i++)
+  // rainbow animation 900 frames of changing color of all leds
+  for (int i = 0; i < 900; i++)
   {
-    for (int j = 0; j < NUM_LEDS * 10; j++)
-    {
-      leds_fb_test[i * NUM_LEDS * 10 + j] = CHSV(i * 2, 255, 255);
-    }
+    leds_fb_test[i * 400] = CRGB::White;
   }
   
 
@@ -101,6 +98,7 @@ void loop()
       avgTime = 0;
       count = 0;
     }
+    delay(1000 / 10);
 }
 
 

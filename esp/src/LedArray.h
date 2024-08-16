@@ -65,12 +65,13 @@ LedArray::LedArray()
 void LedArray::fillBuffer(CRGB *leds)
 {
     CRGB *inactive_buffer = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
-    memcpy(inactive_buffer, leds, sizeof(CRGB) * ALL_LEDS * 4 * FRAMES_PER_SEC);
+    memcpy(inactive_buffer, leds, sizeof(CRGB) * ALL_LEDS * 900);
 }
 
 void LedArray::swapBuffer()
 {
-    buffer_ptr = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
+    //buffer_ptr = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
+    buffer_ptr = leds_fb;
 }
 
 void LedArray::nextFrame()
@@ -82,9 +83,8 @@ void LedArray::nextFrame()
 
     //FastLED.show();
 
-    
 
-    buffer_ptr += ALL_LEDS * led_index++; // ALL_LEDS * 4 * FRAMES_PER_SEC
+    buffer_ptr += led_index++; // ALL_LEDS * 4 * FRAMES_PER_SEC
     
 
     for (int i = 0; i < NUM_LINES; i++) {
@@ -111,7 +111,7 @@ void LedArray::nextFrame()
     // Debug::raw(led_index);
     // Debug::raw("\n");
 
-    if (led_index == FRAMES_PER_SEC * 4)
+    if (led_index == 900)
     {
         led_index = 0;
         swapBuffer();
