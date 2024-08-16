@@ -1,3 +1,6 @@
+#define FASTLED_ALL_PINS_HARDWARE_SPI
+#define FASTLED_ESP32_SPI_BUS FSPI
+#include <SPI.h>
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <FastLED.h>
@@ -50,9 +53,6 @@ void setup()
   }
   
 
-  FastLED.setBrightness(10);
-  FastLED.show();
-
   ledArray->fillBuffer(leds_fb_test);
   ledArray->swapBuffer();
   ledArray->fillBuffer(leds_fb_test);
@@ -82,15 +82,25 @@ void setup()
 //   }
 // }
 
+int avgTime = 0;
+int count = 0;
+uint32_t debugTime = 0;
+
 void loop()
 {
-  if (micros() - lastMicros > 10000)
-  {
-    ledArray->nextFrame();
-    Debug::raw("Time: ");
-    Debug::raw(micros() - lastMicros);
     lastMicros = micros();
-  }
+    ledArray->nextFrame();
+    debugTime = micros();
+    count++;
+    avgTime += debugTime - lastMicros;
+    if (count == 10000)
+    {
+      Debug::raw(" INFO: Average time: ");
+      Debug::raw(avgTime / count);
+      Debug::raw("\n");
+      avgTime = 0;
+      count = 0;
+    }
 }
 
 

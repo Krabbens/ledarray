@@ -2,10 +2,10 @@
 #include <FastLED.h>
 #include "Debug.h"
 
-#define NUM_LEDS 40
-#define ALL_LEDS NUM_LEDS * 10
+#define NUM_LEDS 200
+#define ALL_LEDS 400
 #define FRAMES_PER_SEC 30
-#define NUM_LINES 10
+#define NUM_LINES 2
 
 const int clockPin = 4;
 const int dataPins[10] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
@@ -48,16 +48,16 @@ LedArray::LedArray()
     // controller_1 = &FastLED.addLeds<SK9822, 11, 13, BGR>(buffer_ptr, NUM_LEDS);
     // controller_2 = &FastLED.addLeds<SK9822, 10, 12, BGR>(buffer_ptr, NUM_LEDS, NUM_LEDS);
 
-    controllers[0] = &FastLED.addLeds<SK9822, 5, clockPin, BGR>(buffer_ptr + NUM_LEDS * 0, NUM_LEDS);
-    controllers[1] = &FastLED.addLeds<SK9822, 6, clockPin, BGR>(buffer_ptr + NUM_LEDS * 1, NUM_LEDS);
-    controllers[2] = &FastLED.addLeds<SK9822, 7, clockPin, BGR>(buffer_ptr + NUM_LEDS * 2, NUM_LEDS);
-    controllers[3] = &FastLED.addLeds<SK9822, 15, clockPin, BGR>(buffer_ptr + NUM_LEDS * 3, NUM_LEDS);
-    controllers[4] = &FastLED.addLeds<SK9822, 16, clockPin, BGR>(buffer_ptr + NUM_LEDS * 4, NUM_LEDS);
-    controllers[5] = &FastLED.addLeds<SK9822, 17, clockPin, BGR>(buffer_ptr + NUM_LEDS * 5, NUM_LEDS);
-    controllers[6] = &FastLED.addLeds<SK9822, 18, clockPin, BGR>(buffer_ptr + NUM_LEDS * 6, NUM_LEDS);
-    controllers[7] = &FastLED.addLeds<SK9822, 8, clockPin, BGR>(buffer_ptr + NUM_LEDS * 7, NUM_LEDS);
-    controllers[8] = &FastLED.addLeds<SK9822, 3, clockPin, BGR>(buffer_ptr + NUM_LEDS * 8, NUM_LEDS);
-    controllers[9] = &FastLED.addLeds<SK9822, 9, clockPin, BGR>(buffer_ptr + NUM_LEDS * 9, NUM_LEDS);
+    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, BGR>(buffer_ptr, NUM_LEDS);
+    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, BGR>(buffer_ptr + NUM_LEDS * 1, NUM_LEDS);
+    //controllers[2] = &FastLED.addLeds<SK9822, 6, 5, BGR>(buffer_ptr + NUM_LEDS * 2, NUM_LEDS);
+    //controllers[3] = &FastLED.addLeds<SK9822, 8, 7, BGR>(buffer_ptr + NUM_LEDS * 3, NUM_LEDS);
+    // controllers[4] = &FastLED.addLeds<SK9822, 10, 9, BGR>(buffer_ptr + NUM_LEDS * 4, NUM_LEDS);
+    // controllers[5] = &FastLED.addLeds<SK9822, 12, 11, BGR>(buffer_ptr + NUM_LEDS * 5, NUM_LEDS);
+    // controllers[6] = &FastLED.addLeds<SK9822, 14, 13, BGR>(buffer_ptr + NUM_LEDS * 6, NUM_LEDS);
+    // controllers[7] = &FastLED.addLeds<SK9822, 16, 15, BGR>(buffer_ptr + NUM_LEDS * 7, NUM_LEDS);
+    // controllers[8] = &FastLED.addLeds<SK9822, 18, 17, BGR>(buffer_ptr + NUM_LEDS * 8, NUM_LEDS);
+    // controllers[9] = &FastLED.addLeds<SK9822, 48, 47, BGR>(buffer_ptr + NUM_LEDS * 9, NUM_LEDS);
 
     FastLED.setBrightness(10);
 }
@@ -75,20 +75,41 @@ void LedArray::swapBuffer()
 
 void LedArray::nextFrame()
 {
-    Debug::raw(" INFO: Next frame: ");
-    Debug::raw(led_index);
-    Debug::raw("\n");
-    FastLED.show();
-    buffer_ptr = leds_fb + ALL_LEDS * led_index; // ALL_LEDS * 4 * FRAMES_PER_SEC
+    // Debug::raw(" INFO: Next frame: ");
+    // Debug::raw(led_index);
+
     
-    led_index++;
+
+    //FastLED.show();
+
     
-    // controller_1->setLeds(buffer_ptr, NUM_LEDS);
-    // controller_2->setLeds(buffer_ptr + NUM_LEDS, NUM_LEDS);
+
+    buffer_ptr += ALL_LEDS * led_index++; // ALL_LEDS * 4 * FRAMES_PER_SEC
+    
 
     for (int i = 0; i < NUM_LINES; i++) {
         controllers[i]->setLeds(buffer_ptr + NUM_LEDS * i, NUM_LEDS);
     }
+
+    int32_t start = micros();
+
+    controllers[0]->showLeds();
+    controllers[1]->showLeds();
+
+    controllers[0]->selectSPI();
+    controllers[0]->writePixels();
+    controllers[0]->releaseSPI();
+
+    controllers[1]->selectSPI();
+    controllers[1]->writePixels();
+    controllers[1]->releaseSPI();
+
+    // Debug::raw(" INFO: Show time: ");
+    // Debug::raw(micros() - start);
+
+    // Debug::raw(" INFO: Setting leds: ");
+    // Debug::raw(led_index);
+    // Debug::raw("\n");
 
     if (led_index == FRAMES_PER_SEC * 4)
     {
