@@ -4,7 +4,6 @@
 
 #define NUM_LEDS 200
 #define ALL_LEDS 400
-#define FRAMES_PER_SEC 30
 #define NUM_LINES 2
 
 const int clockPin = 4;
@@ -41,15 +40,15 @@ LedArray::~LedArray()
 
 LedArray::LedArray()
 {
-    leds_fb = (CRGB*)malloc(sizeof(CRGB) * ALL_LEDS * 4 * FRAMES_PER_SEC);
-    leds_bb = (CRGB*)malloc(sizeof(CRGB) * ALL_LEDS * 4 * FRAMES_PER_SEC);
+    leds_fb = (CRGB*)malloc(sizeof(CRGB) * 400 * 900);
+    leds_bb = (CRGB*)malloc(sizeof(CRGB) * 400 * 900);
     buffer_ptr = leds_bb;
 
     // controller_1 = &FastLED.addLeds<SK9822, 11, 13, BGR>(buffer_ptr, NUM_LEDS);
     // controller_2 = &FastLED.addLeds<SK9822, 10, 12, BGR>(buffer_ptr, NUM_LEDS, NUM_LEDS);
 
-    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, BGR>(buffer_ptr, NUM_LEDS);
-    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, BGR>(buffer_ptr + NUM_LEDS * 1, NUM_LEDS);
+    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB>(buffer_ptr, NUM_LEDS);
+    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB>(buffer_ptr + NUM_LEDS, NUM_LEDS);
     //controllers[2] = &FastLED.addLeds<SK9822, 6, 5, BGR>(buffer_ptr + NUM_LEDS * 2, NUM_LEDS);
     //controllers[3] = &FastLED.addLeds<SK9822, 8, 7, BGR>(buffer_ptr + NUM_LEDS * 3, NUM_LEDS);
     // controllers[4] = &FastLED.addLeds<SK9822, 10, 9, BGR>(buffer_ptr + NUM_LEDS * 4, NUM_LEDS);
@@ -65,12 +64,12 @@ LedArray::LedArray()
 void LedArray::fillBuffer(CRGB *leds)
 {
     CRGB *inactive_buffer = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
-    memcpy(inactive_buffer, leds, sizeof(CRGB) * ALL_LEDS * 900);
+    memcpy(inactive_buffer, leds, sizeof(CRGB) * 400 * 900);
 }
 
 void LedArray::swapBuffer()
 {
-    //buffer_ptr = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
+    buffer_ptr = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
     buffer_ptr = leds_fb;
 }
 
@@ -82,19 +81,17 @@ void LedArray::nextFrame()
     
 
     //FastLED.show();
+    controllers[0]->setLeds(buffer_ptr, NUM_LEDS);
+    controllers[1]->setLeds(buffer_ptr + NUM_LEDS, NUM_LEDS);
 
+    buffer_ptr += ALL_LEDS;
+    led_index++;
 
-    buffer_ptr += led_index++; // ALL_LEDS * 4 * FRAMES_PER_SEC
-    
-
-    for (int i = 0; i < NUM_LINES; i++) {
-        controllers[i]->setLeds(buffer_ptr + NUM_LEDS * i, NUM_LEDS);
-    }
 
     int32_t start = micros();
 
-    controllers[0]->showLeds();
-    controllers[1]->showLeds();
+    controllers[0]->showLeds(10);
+    controllers[1]->showLeds(10);
 
     controllers[0]->selectSPI();
     controllers[0]->writePixels();
