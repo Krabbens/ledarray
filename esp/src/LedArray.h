@@ -47,8 +47,8 @@ LedArray::LedArray()
     // controller_1 = &FastLED.addLeds<SK9822, 11, 13, BGR>(buffer_ptr, NUM_LEDS);
     // controller_2 = &FastLED.addLeds<SK9822, 10, 12, BGR>(buffer_ptr, NUM_LEDS, NUM_LEDS);
 
-    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB>(buffer_ptr, NUM_LEDS);
-    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB>(buffer_ptr + NUM_LEDS, NUM_LEDS);
+    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB, DATA_RATE_MHZ(24), 0>(buffer_ptr, NUM_LEDS);
+    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB, DATA_RATE_MHZ(24), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
     //controllers[2] = &FastLED.addLeds<SK9822, 6, 5, BGR>(buffer_ptr + NUM_LEDS * 2, NUM_LEDS);
     //controllers[3] = &FastLED.addLeds<SK9822, 8, 7, BGR>(buffer_ptr + NUM_LEDS * 3, NUM_LEDS);
     // controllers[4] = &FastLED.addLeds<SK9822, 10, 9, BGR>(buffer_ptr + NUM_LEDS * 4, NUM_LEDS);
