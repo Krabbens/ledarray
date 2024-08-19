@@ -50,7 +50,7 @@ void setup()
   mqtt->connectToBroker();
   mqtt->subscribe("upper_esp");
 
-  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * NUM_LEDS * NUM_LINES * FRAMES_PER_SEC * 4);
+  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * NUM_LEDS * NUM_LINES * FRAMES_PER_SEC * SEC_IN_BUFFER);
   // 10 lines of 40 leds, 30 frames, 4 seconds of animation
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
@@ -58,11 +58,11 @@ void setup()
   ledArray = new LedArray(bufferCallback);
 
   // rainbow animation 120 frames of changing color of all leds
-  for (int i = 0; i < 120; i++)
+  for (int i = 0; i < FRAMES_PER_SEC * SEC_IN_BUFFER; i++)
   {
-    for (int j = 0; j < NUM_LEDS * 10; j++)
+    for (int j = 0; j < NUM_LEDS * NUM_LINES; j++)
     {
-      leds_fb_test[i * NUM_LEDS * 10 + j] = CHSV(i * 2, 255, 255);
+      leds_fb_test[i * NUM_LEDS * NUM_LINES + j] = CHSV(i * 2, 255, 255);
     }
   }
   

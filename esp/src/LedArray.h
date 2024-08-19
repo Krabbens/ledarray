@@ -5,7 +5,7 @@
 
 #define NUM_LEDS 40
 #define ALL_LEDS NUM_LEDS * 10
-#define FRAMES_PER_SEC 30
+#define FRAMES_PER_SEC 40
 #define NUM_LINES 10
 #define SEC_IN_BUFFER 4
 
@@ -71,7 +71,7 @@ LedArray::LedArray(void (*bufferCallback)())
 void LedArray::fillBuffer(CRGB *leds)
 {
     CRGB *inactive_buffer = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
-    memcpy(inactive_buffer, leds, sizeof(CRGB) * ALL_LEDS * 4 * FRAMES_PER_SEC);
+    memcpy(inactive_buffer, leds, sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
 }
 
 void LedArray::swapBuffer()

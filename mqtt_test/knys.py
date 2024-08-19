@@ -1,6 +1,7 @@
 import paho.mqtt.client as mqtt
 import os
 import struct
+import time
 
 # Definicje typów ramek
 FRAME_TYPE_ANIMATION = 0
@@ -18,16 +19,19 @@ class FileChunkReader:
         self.current_position = 0
 
     def get_chunk(self):
-        self.file.seek(self.current_position)
-        data = self.file.read(self.chunk_size)
+        chunk = b''
+        while len(chunk) < self.chunk_size:
+            self.file.seek(self.current_position)
+            remaining_bytes = self.chunk_size - len(chunk)
+            data = self.file.read(remaining_bytes)
+            chunk += data
+            
+            if len(data) < remaining_bytes:
+                self.current_position = 0  # Wróć na początek pliku
+            else:
+                self.current_position = (self.current_position + remaining_bytes) % self.file_size
         
-        if len(data) < self.chunk_size:
-            remaining_size = self.chunk_size - len(data)
-            self.file.seek(0)
-            data += self.file.read(remaining_size)
-        
-        self.current_position = (self.current_position + self.chunk_size) % self.file_size
-        return data
+        return chunk
 
 file = open('image.dat', 'rb')
 reader = FileChunkReader(file, 0)
@@ -94,11 +98,21 @@ def on_message(client, userdata, msg):
         print("Received ALIVE_STATUS message with content: " + str(content))
     elif frame_type == FRAME_TYPE_READY:
         print(f"Received READY message with integer content: " + content)
-        frame = create_frame(FRAME_TYPE_ANIMATION, reader.get_chunk())
-        client.publish("upper_esp", frame)
+        if(reader.chunk_size == 0):
+            print("chunk size not set")
+            frame_type = FRAME_TYPE_CHECK_ALIVE
+            content = 42  # Przykładowa liczba całkowita do wysłania
+            frame = create_frame(frame_type, content)
+            client.publish("upper_esp", frame)
+            print("Sent")
+        else:
+            chunk = reader.get_chunk()
+            frame = create_frame(FRAME_TYPE_ANIMATION, chunk)
+            print(len(chunk))
+            client.publish("upper_esp", frame)
     elif frame_type == FRAME_TYPE_BUFFER_SIZE:
         print(f"Received BUFFER_SIZE message with integer content: " + str(content))
-        reader.chunk_size = content + 1
+        reader.chunk_size = content
     else:
         print("Unknown frame type received")
 
@@ -112,14 +126,5 @@ client.on_connect = on_connect
 client.on_message = on_message
 
 client.connect("5686adbdc3644dca8e63a851e72c3b21.s1.eu.hivemq.cloud", 8883, 60)
-
-# Tworzenie ramki do wysłania
-frame_type = FRAME_TYPE_CHECK_ALIVE
-content = 42  # Przykładowa liczba całkowita do wysłania
-frame = create_frame(frame_type, content)
-
-# Wysyłanie wiadomości MQTT
-client.publish("upper_esp", frame)
-print("Sent")
 
 client.loop_forever()

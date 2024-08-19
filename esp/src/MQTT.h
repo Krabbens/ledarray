@@ -135,8 +135,8 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     switch (frame->type) {
         case animation:
             {
-                Debug::raw("Frame type: animation, len: " + String(length) + "\n");
-                if(length >= sizeof(Frame) + sizeof(CRGB) * NUM_LEDS * NUM_LINES * FRAMES_PER_SEC * FRAMES_PER_SEC){
+                Debug::raw("Frame type: animation, len: " + String(length) + ", len - frame: " + String(length - sizeof(Frame)) + "\n");
+                if(length >= sizeof(Frame) + sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC){
                     ledArray->fillBuffer((CRGB*)(payload+sizeof(Frame)));
                 }
                 else{
