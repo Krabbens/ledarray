@@ -210,10 +210,10 @@ public:
 	static_assert(FastPin<CLOCK_PIN>::validpin(), "Invalid clock pin specified");
 
 	ESP32SPIBusOutput() :
-	  m_ledSPI(FASTLED_ESP32_SPI_BUS),
+	  m_ledSPI(BUS),
 	  m_pSelect(nullptr) {}
 	ESP32SPIBusOutput(Selectable *pSelect) :
-	  m_ledSPI(FASTLED_ESP32_SPI_BUS),
+	  m_ledSPI(BUS),
 	  m_pSelect(pSelect) {}
 	void setSelect(Selectable *pSelect) { m_pSelect = pSelect; }
 
