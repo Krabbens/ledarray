@@ -269,6 +269,15 @@ public:
 	/// @tparam SPI_DATA_RATE the data rate to drive the SPI clock at, defined using DATA_RATE_MHZ or DATA_RATE_KHZ macros
 	/// @returns a reference to the added controller
 	/// @{
+	template<ESPIChipsets CHIPSET,  uint8_t DATA_PIN, uint8_t CLOCK_PIN, EOrder RGB_ORDER, uint32_t SPI_DATA_RATE, uint8_t BUS > CLEDController &addLeds(struct CRGB *data, int nLedsOrOffset, int nLedsIfOffset = 0) {
+		switch(CHIPSET) {
+			case APA102: { static APA102Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case APA102HD: { static APA102ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case SK9822: { static SK9822Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case SK9822HD: { static SK9822ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+		}
+	}
+
 
 	/// Add an SPI based CLEDController instance to the world.
 	template<ESPIChipsets CHIPSET,  uint8_t DATA_PIN, uint8_t CLOCK_PIN, EOrder RGB_ORDER, uint32_t SPI_DATA_RATE > CLEDController &addLeds(struct CRGB *data, int nLedsOrOffset, int nLedsIfOffset = 0) {

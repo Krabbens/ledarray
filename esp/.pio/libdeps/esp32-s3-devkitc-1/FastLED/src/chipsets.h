@@ -219,6 +219,7 @@ template <
 	uint8_t DATA_PIN, uint8_t CLOCK_PIN,
 	EOrder RGB_ORDER = RGB,
 	uint32_t SPI_SPEED = DATA_RATE_MHZ(12),
+	uint8_t BUS = 0,
 	FiveBitGammaCorrectionMode GAMMA_CORRECTION_MODE = kFiveBitGammaCorrectionMode_Null,
 	uint32_t START_FRAME = 0x00000000,
 	uint32_t END_FRAME = 0xFF000000
@@ -387,13 +388,15 @@ template <
 	uint8_t DATA_PIN,
 	uint8_t CLOCK_PIN,
 	EOrder RGB_ORDER = RGB,
-	uint32_t SPI_SPEED = DATA_RATE_MHZ(24)
+	uint32_t SPI_SPEED = DATA_RATE_MHZ(24),
+	uint8_t BUS = 0
 >
 class APA102ControllerHD : public APA102Controller<
 	DATA_PIN,
 	CLOCK_PIN, 
 	RGB_ORDER,
 	SPI_SPEED,
+	BUS,
 	kFiveBitGammaCorrectionMode_BitShift,
 	uint32_t(0x00000000),
 	uint32_t(0x00000000)> {
@@ -411,13 +414,15 @@ template <
 	uint8_t DATA_PIN,
 	uint8_t CLOCK_PIN,
 	EOrder RGB_ORDER = RGB,
-	uint32_t SPI_SPEED = DATA_RATE_MHZ(24)
+	uint32_t SPI_SPEED = DATA_RATE_MHZ(24),
+	uint8_t BUS = 0
 >
 class SK9822Controller : public APA102Controller<
 	DATA_PIN,
 	CLOCK_PIN,
 	RGB_ORDER,
 	SPI_SPEED,
+	BUS,
 	kFiveBitGammaCorrectionMode_Null,
 	0x00000000,
 	0x00000000
@@ -433,13 +438,15 @@ template <
 	uint8_t DATA_PIN,
 	uint8_t CLOCK_PIN,
 	EOrder RGB_ORDER = RGB,
-	uint32_t SPI_SPEED = DATA_RATE_MHZ(24)
+	uint32_t SPI_SPEED = DATA_RATE_MHZ(24),
+	uint8_t BUS = 0
 >
 class SK9822ControllerHD : public APA102Controller<
 	DATA_PIN,
 	CLOCK_PIN,
 	RGB_ORDER,
 	SPI_SPEED,
+	BUS,
 	kFiveBitGammaCorrectionMode_BitShift,
 	0x00000000,
 	0x00000000
