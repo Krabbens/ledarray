@@ -1,3 +1,4 @@
+#pragma once
 #include <PubSubClient.h>
 #include <WiFiClientSecure.h>
 #include "Debug.h"
@@ -46,6 +47,7 @@ public:
     void connectToBroker();
     void publish(const char* topic, const char* payload);
     void publish(const char* topic, byte* payload, unsigned int len);
+    void publishInteger(const char* topic, FrameType type, int value);
     void subscribe(const char* topic);
     void loop() {
         client.loop();
@@ -99,6 +101,16 @@ void MQTT::publish(const char* topic, byte* payload, unsigned int len){
     }
 }
 
+void MQTT::publishInteger(const char* topic, FrameType type, int value){
+    Frame frame;
+    frame.type = type;
+    frame.content_length = sizeof(int);          
+    byte buffer[sizeof(frame) + sizeof(int)];
+    memcpy(buffer, &frame, sizeof(frame));
+    memcpy(buffer + sizeof(frame), &value, sizeof(int));
+    publish(topic, buffer, sizeof(buffer));
+}
+
 void MQTT::subscribe(const char* topic) {
     if (client.connected()) {
         client.subscribe(topic);
@@ -106,40 +118,51 @@ void MQTT::subscribe(const char* topic) {
 }
 
 extern MQTT* mqtt;
+extern LedArray *ledArray;
 
 void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     Debug::raw("MQTT: Message arrived [");
     Debug::raw(topic);
     Debug::raw("] ");
     
-    // Sprawdzenie, czy wiadomość jest wystarczająco długa, aby zawierać ramkę
     if (length < sizeof(Frame)) {
         Debug::raw("Error: Payload too short to contain a Frame\n");
         return;
     }
     
-    // Odczytanie ramki
     Frame* frame = (Frame*)payload;
+
     switch (frame->type) {
         case animation:
-            Debug::raw("Frame type: animation\n");
-            // Tutaj przetwarzanie zawartości wiadomości typu "animation"
-            break;
+            {
+                Debug::raw("Frame type: animation, len: " + String(length) + "\n");
+                if(length >= sizeof(Frame) + sizeof(CRGB) * NUM_LEDS * NUM_LINES * FRAMES_PER_SEC * FRAMES_PER_SEC){
+                    ledArray->fillBuffer((CRGB*)(payload+sizeof(Frame)));
+                }
+                else{
+                    Debug::error("Payload too short\n");
+                }
+                break;
+            }
         case check_alive:
-            Debug::raw("Frame type: check_alive\n");
-            // Tutaj przetwarzanie zawartości wiadomości typu "check_alive"
-            break;
+            {
+                Debug::raw("Frame type: check_alive\n");
+                //mqtt->publishInteger("external", alive_status, 1);
+                mqtt->publishInteger("external", buffer_size, sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
+
+                break;
+            }
         case alive_status:
             Debug::raw("Frame type: alive_status\n");
-            // Tutaj przetwarzanie zawartości wiadomości typu "alive_status"
+
             break;
         case ready:
             Debug::raw("Frame type: ready\n");
-            // Tutaj przetwarzanie zawartości wiadomości typu "ready"
+
             break;
         case buffer_size:
             Debug::raw("Frame type: buffer_size\n");
-            // Tutaj przetwarzanie zawartości wiadomości typu "ready"
+
             break;
         default:
             Debug::raw("Unknown Frame type\n");

@@ -1,10 +1,11 @@
+#pragma once
 #include <Arduino.h>
 #include <FastLED.h>
 #include "Debug.h"
 
 #define NUM_LEDS 40
 #define ALL_LEDS NUM_LEDS * 10
-#define FRAMES_PER_SEC 300
+#define FRAMES_PER_SEC 30
 #define NUM_LINES 10
 #define SEC_IN_BUFFER 4
 
