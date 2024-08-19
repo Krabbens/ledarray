@@ -47,7 +47,7 @@ void setup()
   for (int i = 0; i < 900; i++)
   {
     for (int j = 0; j < 400; j++) {
-      leds_fb_test[i * 400 + j] = CRGB::Red;
+      leds_fb_test[i * 400 + j] = CRGB::Green;
     }
   }
   
