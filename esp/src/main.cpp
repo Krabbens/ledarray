@@ -1,3 +1,6 @@
+#define FASTLED_ALL_PINS_HARDWARE_SPI
+#define FASTLED_ESP32_SPI_BUS FSPI
+#include <SPI.h>
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <FastLED.h>
@@ -34,27 +37,26 @@ void setup()
   // mqtt->connectToBroker();
   // mqtt->subscribe("esp32/check_alive");
 
-  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
+  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
   // 10 lines of 40 leds, 30 frames, 4 seconds of animation
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
-  FastLED.addLeds<SK9822, 11, 13, BGR>(leds_fb_test, NUM_LEDS);
-  FastLED.addLeds<SK9822, 10, 12, BGR>(leds_fb_test, NUM_LEDS, NUM_LEDS);
-
   ledArray = new LedArray();
 
-  // rainbow animation 120 frames of changing color of all leds
-  for (int i = 0; i < 120; i++)
+  // rainbow animation 900 frames of changing color of all leds
+  for (int i = 0; i < 900; i++)
   {
-    for (int j = 0; j < NUM_LEDS * 10; j++)
+    for (int j = 0; j < 400; j++)
     {
-      leds_fb_test[i * NUM_LEDS * 10 + j] = CHSV(i * 2, 255, 255);
+      leds_fb_test[i * 400 + j] = CRGB::Black;
     }
   }
-  
 
-  FastLED.setBrightness(10);
-  FastLED.show();
+  for (int i = 0; i < 900; i++)
+  {
+    leds_fb_test[i * 400 + i % 400] = CRGB::Red;
+  }
+  
 
   ledArray->fillBuffer(leds_fb_test);
   ledArray->swapBuffer();
@@ -85,15 +87,26 @@ void setup()
 //   }
 // }
 
+int avgTime = 0;
+int count = 0;
+uint32_t debugTime = 0;
+
 void loop()
 {
-  if (micros() - lastMicros > 10000)
-  {
-    ledArray->nextFrame();
-    Debug::raw("Time: ");
-    Debug::raw(micros() - lastMicros);
     lastMicros = micros();
-  }
+    ledArray->nextFrame();
+    debugTime = micros();
+    count++;
+    avgTime += debugTime - lastMicros;
+    if (count == 10000)
+    {
+      Debug::raw(" INFO: Average time: ");
+      Debug::raw(avgTime / count);
+      Debug::raw("\n");
+      avgTime = 0;
+      count = 0;
+    }
+    delay(100);
 }
 
 
