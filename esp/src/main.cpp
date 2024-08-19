@@ -46,9 +46,15 @@ void setup()
   // rainbow animation 900 frames of changing color of all leds
   for (int i = 0; i < 900; i++)
   {
-    for (int j = 0; j < 400; j++) {
-      leds_fb_test[i * 400 + j] = CRGB::Green;
+    for (int j = 0; j < 400; j++)
+    {
+      leds_fb_test[i * 400 + j] = CRGB::Black;
     }
+  }
+
+  for (int i = 0; i < 900; i++)
+  {
+    leds_fb_test[i * 400 + i % 400] = CRGB::Red;
   }
   
 
@@ -100,6 +106,7 @@ void loop()
       avgTime = 0;
       count = 0;
     }
+    delay(100);
 }
 
 
