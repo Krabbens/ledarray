@@ -3,4 +3,6 @@ esp/.pio/build/esp32-s3-devkitc-1/firmware.elf
 esp/.pio/build/esp32-s3-devkitc-1/firmware.map
 esp/.pio/build/esp32-s3-devkitc-1/libFrameworkArduino.a
 esp/.pio/build/esp32-s3-devkitc-1/FrameworkArduino/firmware_msc_fat.c.o
-esp/.pio/build/esp32-s3-devkitc-1/src/main.cpp.o
+esp/.pio/build/
+.venv
+blender/cache*
