@@ -1,4 +1,4 @@
-23647249132787539
+23652422826008852
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -86044,6 +86044,13 @@ mini-circuits pl-049
 36
 8
 RF_Module
+5vgnd
+
+
+0
+2
+2
+RF_Module
 Ai-Thinker-Ra-01-LoRa
 Ai Thinker Ra-01 LoRa
 LoRa Ra-01
@@ -86457,12 +86464,26 @@ RF transceiver SMD style
 12
 12
 RF_Module
+led_con
+
+
+0
+2
+2
+RF_Module
 nRF24L01_Breakout
 nRF24L01 breakout board
 nRF24L01 adapter breakout
 0
 8
 8
+RF_Module
+rxtx
+
+
+0
+2
+2
 RF_Shielding
 Laird_Technologies_97-2002_25.40x25.40mm
 Laird Technologies 97-2002 EZ PEEL Shielding Cabinet One Piece SMD 25.40x25.40mm (https://assets.lairdtech.com/home/brandworld/files/Board%20Level%20Shields%20Catalog%20Download.pdf)
