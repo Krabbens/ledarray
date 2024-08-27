@@ -12,7 +12,7 @@ def convert_image(image_path):
 
 
 def main():
-    for i in range(1, 241):
+    for i in range(1, 60):
         img = convert_image(path + str(i).zfill(4) + '.png')
         with open("image.dat", "ab") as f:
             for row in img:

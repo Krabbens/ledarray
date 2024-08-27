@@ -1,3 +1,6 @@
+#define FASTLED_ALL_PINS_HARDWARE_SPI
+#define FASTLED_ESP32_SPI_BUS FSPI
+#include <SPI.h>
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <FastLED.h>
@@ -54,68 +57,76 @@ void setup()
   mqtt->connectToBroker();
   mqtt->subscribe("upper_esp");
 
-  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * NUM_LEDS * NUM_LINES * FRAMES_PER_SEC * SEC_IN_BUFFER);
+  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
   // 10 lines of 40 leds, 30 frames, 4 seconds of animation
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
   ledArray = new LedArray(bufferCallback);
 
-  // rainbow animation 120 frames of changing color of all leds
-  for (int i = 0; i < FRAMES_PER_SEC * SEC_IN_BUFFER; i++)
+  // rainbow animation 900 frames of changing color of all leds
+  for (int i = 0; i < 900; i++)
   {
-    for (int j = 0; j < NUM_LEDS * NUM_LINES; j++)
+    for (int j = 0; j < 400; j++)
     {
-      leds_fb_test[i * NUM_LEDS * NUM_LINES + j] = CHSV(i * 2, 255, 255);
+      leds_fb_test[i * 400 + j] = CRGB::Black;
     }
+  }
+
+  for (int i = 0; i < 900; i++)
+  {
+    leds_fb_test[i * 400 + i % 400] = CRGB::Red;
   }
   
 
-  FastLED.setBrightness(10);
-  FastLED.show();
-
   ledArray->fillBuffer(leds_fb_test);
   ledArray->swapBuffer();
   ledArray->fillBuffer(leds_fb_test);
   ledArray->swapBuffer();
 
-  xTaskCreatePinnedToCore(
-      mqttLoop,
-      "mqttLoop",
-      409600,
-      NULL,
-      1,
-      NULL,
-      0
-  );
+  // ledArray->fillBuffer(leds_fb_test);
+  // ledArray->swapBuffer();
+  // ledArray->fillBuffer(leds_bb_test);
+  // ledArray->swapBuffer();
 
-
-
-  Debug::info("TESTING ANIMDB\n");
-  if(!FileManager::begin()){
-    Debug::error("An error occurred while mounting SPIFFS");
-  }
-  const char test[20] = "hello world";
-  animDB = new AnimDB();
-  animDB->Print();
-  bool err = animDB->addAnimation("first", (byte*)test, sizeof(test));
-  animDB->Print();
-  if(err) {
-    size_t size = animDB->getAnimationSize("first");
-    if(size > 0){
-      char* test1 = (char*)malloc(size);
-      err = animDB->getAnimation("first", (byte*)test1, size);
-      Debug::info("TEST RESULT: "+ String(test1));
-    }
-  }
-  animDB->Print();
-  animDB->Clear();
+  // xTaskCreatePinnedToCore(
+  //     mqttLoop,
+  //     "mqttLoop",
+  //     409600,
+  //     NULL,
+  //     1,
+  //     NULL,
+  //     0
+  // );
 }
+
+// void mqttLoop(void *parameter)
+// {
+//   while (true)
+//   {
+//     mqtt->loop();
+//   }
+// }
+
+int avgTime = 0;
+int count = 0;
+uint32_t debugTime = 0;
 
 void loop()
 {
-  mqtt->loop();
-
-  ledArray->nextFrame();
+    lastMicros = micros();
+    ledArray->nextFrame();
+    debugTime = micros();
+    count++;
+    avgTime += debugTime - lastMicros;
+    if (count == 10000)
+    {
+      Debug::raw(" INFO: Average time: ");
+      Debug::raw(avgTime / count);
+      Debug::raw("\n");
+      avgTime = 0;
+      count = 0;
+    }
+    delay(100);
 }
 
 
