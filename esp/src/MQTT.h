@@ -135,20 +135,20 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     switch (frame->type) {
         case animation:
             {
-                Debug::raw("Frame type: animation, len: " + String(length) + ", len - frame: " + String(length - sizeof(Frame)) + "\n");
-                if(length >= sizeof(Frame) + sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC){
-                    ledArray->fillBuffer((CRGB*)(payload+sizeof(Frame)));
-                }
-                else{
-                    Debug::error("Payload too short\n");
-                }
+                // Debug::raw("Frame type: animation, len: " + String(length) + ", len - frame: " + String(length - sizeof(Frame)) + "\n");
+                // if(length >= sizeof(Frame) + sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC){
+                //     ledArray->fillBuffer((CRGB*)(payload+sizeof(Frame)));
+                // }
+                // else{
+                //     Debug::error("Payload too short\n");
+                // }
                 break;
             }
         case check_alive:
             {
                 Debug::raw("Frame type: check_alive\n");
                 //mqtt->publishInteger("external", alive_status, 1);
-                mqtt->publishInteger("external", buffer_size, sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
+                // mqtt->publishInteger("external", buffer_size, sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
 
                 break;
             }
