@@ -28,75 +28,77 @@ CRGB *leds_bb_test;
 
 void mqttLoop(void *parameter)
 {
-  while (true)
-  {
-    mqtt->loop();
-  }
+    while (true)
+    {
+        mqtt->loop();
+    }
 }
 
-void bufferCallback(){
-  Frame frame;
+
+void bufferCallback()
+{
+    Frame frame;
     frame.type = ready; // Upewnij się, że `ready` jest prawidłowym typem
     frame.content_length = 0;
-    
-    mqtt->publish("external", (byte*)&frame, sizeof(frame));
+
+    mqtt->publish("external", (byte *)&frame, sizeof(frame));
 }
 
 void setup()
 {
-  Debug::init();
-  Debug::info("Starting...");
-  wifiClient = new WiFiClientSecure();
-  wireless = new Wireless();
-  while (!wireless->isConnected())
-  {
-    delay(1000);
-  }
-  mqtt = new MQTT(wifiClient);
-
-  mqtt->connectToBroker();
-  mqtt->subscribe("upper_esp");
-
-  leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
-  // 10 lines of 40 leds, 30 frames, 4 seconds of animation
-  // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
-
-  ledArray = new LedArray(bufferCallback);
-
-  // rainbow animation 900 frames of changing color of all leds
-  for (int i = 0; i < 900; i++)
-  {
-    for (int j = 0; j < 400; j++)
+    Debug::init();
+    Debug::info("Starting...");
+    wifiClient = new WiFiClientSecure();
+    wireless = new Wireless();
+    while (!wireless->isConnected())
     {
-      leds_fb_test[i * 400 + j] = CRGB::Black;
+        delay(1000);
     }
-  }
 
-  for (int i = 0; i < 900; i++)
-  {
-    leds_fb_test[i * 400 + i % 400] = CRGB::Red;
-  }
-  
+    animDB = new AnimDB();
+    animDB->Print();
 
-  ledArray->fillBuffer(leds_fb_test);
-  ledArray->swapBuffer();
-  ledArray->fillBuffer(leds_fb_test);
-  ledArray->swapBuffer();
+    mqtt = new MQTT(wifiClient);
 
-  // ledArray->fillBuffer(leds_fb_test);
-  // ledArray->swapBuffer();
-  // ledArray->fillBuffer(leds_bb_test);
-  // ledArray->swapBuffer();
+    mqtt->connectToBroker();
+    mqtt->subscribe("upper_esp");
 
-  // xTaskCreatePinnedToCore(
-  //     mqttLoop,
-  //     "mqttLoop",
-  //     409600,
-  //     NULL,
-  //     1,
-  //     NULL,
-  //     0
-  // );
+    leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
+
+    ledArray = new LedArray(bufferCallback);
+
+    for (int i = 0; i < 900; i++)
+    {
+        for (int j = 0; j < 400; j++)
+        {
+            leds_fb_test[i * 400 + j] = CRGB::Black;
+        }
+    }
+
+    for (int i = 0; i < 900; i++)
+    {
+        leds_fb_test[i * 400 + i % 400] = CRGB::Red;
+    }
+
+    ledArray->fillBuffer(leds_fb_test);
+    ledArray->swapBuffer();
+    ledArray->fillBuffer(leds_fb_test);
+    ledArray->swapBuffer();
+
+    // ledArray->fillBuffer(leds_fb_test);
+    // ledArray->swapBuffer();
+    // ledArray->fillBuffer(leds_bb_test);
+    // ledArray->swapBuffer();
+
+    // xTaskCreatePinnedToCore(
+    //     mqttLoop,
+    //     "mqttLoop",
+    //     409600,
+    //     NULL,
+    //     1,
+    //     NULL,
+    //     0
+    // );
 }
 
 // void mqttLoop(void *parameter)
@@ -113,6 +115,7 @@ uint32_t debugTime = 0;
 
 void loop()
 {
+    mqtt->loop();
     lastMicros = micros();
     ledArray->nextFrame();
     debugTime = micros();
@@ -120,13 +123,10 @@ void loop()
     avgTime += debugTime - lastMicros;
     if (count == 10000)
     {
-      Debug::raw(" INFO: Average time: ");
-      Debug::raw(avgTime / count);
-      Debug::raw("\n");
-      avgTime = 0;
-      count = 0;
+        Debug::raw(" INFO: Average time: ");
+        Debug::raw(avgTime / count);
+        Debug::raw("\n");
+        avgTime = 0;
+        count = 0;
     }
-    delay(100);
 }
-
-
