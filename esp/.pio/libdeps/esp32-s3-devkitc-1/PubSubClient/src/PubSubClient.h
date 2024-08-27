@@ -23,7 +23,11 @@
 
 // MQTT_MAX_PACKET_SIZE : Maximum packet size. Override with setBufferSize().
 #ifndef MQTT_MAX_PACKET_SIZE
+<<<<<<< HEAD
+#define MQTT_MAX_PACKET_SIZE 200000
+=======
 #define MQTT_MAX_PACKET_SIZE 256
+>>>>>>> 6c26e5301307b412681e51cc0be6a8da1e4da3bb
 #endif
 
 // MQTT_KEEPALIVE : keepAlive interval in Seconds. Override with setKeepAlive()
@@ -89,7 +93,11 @@ class PubSubClient : public Print {
 private:
    Client* _client;
    uint8_t* buffer;
+<<<<<<< HEAD
+   uint32_t bufferSize;
+=======
    uint16_t bufferSize;
+>>>>>>> 6c26e5301307b412681e51cc0be6a8da1e4da3bb
    uint16_t keepAlive;
    uint16_t socketTimeout;
    uint16_t nextMsgId;
@@ -99,9 +107,15 @@ private:
    MQTT_CALLBACK_SIGNATURE;
    uint32_t readPacket(uint8_t*);
    boolean readByte(uint8_t * result);
+<<<<<<< HEAD
+   boolean readByte(uint8_t * result, uint32_t * index);
+   boolean write(uint8_t header, uint8_t* buf, uint32_t length);
+   uint32_t writeString(const char* string, uint8_t* buf, uint32_t pos);
+=======
    boolean readByte(uint8_t * result, uint16_t * index);
    boolean write(uint8_t header, uint8_t* buf, uint16_t length);
    uint16_t writeString(const char* string, uint8_t* buf, uint16_t pos);
+>>>>>>> 6c26e5301307b412681e51cc0be6a8da1e4da3bb
    // Build up the header ready to send
    // Returns the size of the header
    // Note: the header is built at the end of the first MQTT_MAX_HEADER_SIZE bytes, so will start
@@ -139,8 +153,13 @@ public:
    PubSubClient& setKeepAlive(uint16_t keepAlive);
    PubSubClient& setSocketTimeout(uint16_t timeout);
 
+<<<<<<< HEAD
+   boolean setBufferSize(uint32_t size);
+   uint32_t getBufferSize();
+=======
    boolean setBufferSize(uint16_t size);
    uint16_t getBufferSize();
+>>>>>>> 6c26e5301307b412681e51cc0be6a8da1e4da3bb
 
    boolean connect(const char* id);
    boolean connect(const char* id, const char* user, const char* pass);

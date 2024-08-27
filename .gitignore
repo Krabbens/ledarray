@@ -6,3 +6,5 @@ esp/.pio/build/esp32-s3-devkitc-1/FrameworkArduino/firmware_msc_fat.c.o
 esp/.pio/build/
 .venv
 blender/cache*
+esp/.pio/build/esp32-s3-devkitc-1/src/main.cpp.o
+mqtt_test/image.dat

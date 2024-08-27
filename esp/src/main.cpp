@@ -8,6 +8,9 @@
 #include "Wireless.h"
 #include "MQTT.h"
 #include "LedArray.h"
+#include "AnimDB.h"
+#include "FS.h"
+#include "SPIFFS.h"
 
 #define D_LOG
 
@@ -15,6 +18,7 @@ WiFiClientSecure *wifiClient;
 Wireless *wireless;
 MQTT *mqtt;
 LedArray *ledArray;
+AnimDB *animDB;
 
 uint32_t maxTime = 0;
 uint32_t lastMicros = micros();
@@ -22,26 +26,42 @@ uint32_t lastMicros = micros();
 CRGB *leds_fb_test;
 CRGB *leds_bb_test;
 
+void mqttLoop(void *parameter)
+{
+  while (true)
+  {
+    mqtt->loop();
+  }
+}
+
+void bufferCallback(){
+  Frame frame;
+    frame.type = ready; // Upewnij się, że `ready` jest prawidłowym typem
+    frame.content_length = 0;
+    
+    mqtt->publish("external", (byte*)&frame, sizeof(frame));
+}
+
 void setup()
 {
   Debug::init();
   Debug::info("Starting...");
-  // wifiClient = new WiFiClientSecure();
-  // wireless = new Wireless();
-  // while (!wireless->isConnected())
-  // {
-  //   delay(1000);
-  // }
-  // mqtt = new MQTT(wifiClient);
+  wifiClient = new WiFiClientSecure();
+  wireless = new Wireless();
+  while (!wireless->isConnected())
+  {
+    delay(1000);
+  }
+  mqtt = new MQTT(wifiClient);
 
-  // mqtt->connectToBroker();
-  // mqtt->subscribe("esp32/check_alive");
+  mqtt->connectToBroker();
+  mqtt->subscribe("upper_esp");
 
   leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
   // 10 lines of 40 leds, 30 frames, 4 seconds of animation
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
-  ledArray = new LedArray();
+  ledArray = new LedArray(bufferCallback);
 
   // rainbow animation 900 frames of changing color of all leds
   for (int i = 0; i < 900; i++)

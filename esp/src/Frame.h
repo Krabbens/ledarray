@@ -1,13 +1,17 @@
+#pragma once
 #include <Arduino.h>
 
-enum FrameType
-{
-    Animation = 0,
-    Alive = 1,
+enum FrameType{
+    animation = 0,
+    check_alive = 1,
+    alive_status = 2,
+    ready = 3,
+    buffer_size = 4
 };
+
 struct Frame
 {
-    uint8_t type; // 0 = animation
+    FrameType type; // 0 = animation
     uint32_t content_length; // content length in bytes
 };
 

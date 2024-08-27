@@ -1,3 +1,4 @@
+#pragma once
 #include <Arduino.h>
 #include <FastLED.h>
 #include "Debug.h"
@@ -9,7 +10,7 @@
 class LedArray
 {
 public:
-    LedArray();
+    LedArray(void (*bufferCallback)());
     ~LedArray();
 
     void fillBuffer(CRGB *input);
@@ -24,6 +25,8 @@ private:
     CRGB* buffer_ptr;
 
     CLEDController* controllers[NUM_LINES];
+
+    void (*swapBufferCallback)();
 };
 
 LedArray::~LedArray()
@@ -32,7 +35,7 @@ LedArray::~LedArray()
     free(leds_bb);
 }
 
-LedArray::LedArray()
+LedArray::LedArray(void (*bufferCallback)())
 {
     leds_fb = (CRGB*)malloc(sizeof(CRGB) * 400 * 900);
     leds_bb = (CRGB*)malloc(sizeof(CRGB) * 400 * 900);
@@ -42,6 +45,8 @@ LedArray::LedArray()
     controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB, DATA_RATE_MHZ(24), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
 
     FastLED.setBrightness(10);
+
+    swapBufferCallback = bufferCallback;
 }
 
 void LedArray::fillBuffer(CRGB *leds)
