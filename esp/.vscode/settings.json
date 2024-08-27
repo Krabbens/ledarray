@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "new": "cpp"
+        "new": "cpp",
+        "random": "cpp",
+        "thread": "cpp",
+        "string_view": "cpp",
+        "regex": "cpp",
+        "cmath": "cpp",
+        "string": "cpp"
     }
 }
