@@ -6,7 +6,13 @@ enum FrameType{
     check_alive = 1,
     alive_status = 2,
     ready = 3,
-    buffer_size = 4
+    buffer_size = 4,
+    animation_add = 5,
+    animation_remove = 6,
+    animation_get = 7,
+    animation_play = 8,
+    animation_clear = 9,
+    animation_names = 10,
 };
 
 struct Frame

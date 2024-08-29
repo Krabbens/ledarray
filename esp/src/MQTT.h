@@ -4,6 +4,7 @@
 #include "Debug.h"
 #include "Frame.h"
 #include "LedArray.h"
+#include "AnimDB.h"
 
 static const char *root_ca PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
@@ -119,6 +120,16 @@ void MQTT::subscribe(const char* topic) {
 
 extern MQTT* mqtt;
 extern LedArray *ledArray;
+extern AnimDB *animDB;
+
+const byte* findAnimation(const byte* data, size_t len) {
+    size_t nameLen = strlen((const char *)data);
+
+    if (nameLen >= len) {
+        return NULL; 
+    }
+    return data + nameLen + 1;
+}
 
 void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     Debug::raw("MQTT: Message arrived [");
@@ -126,11 +137,12 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     Debug::raw("] ");
     
     if (length < sizeof(Frame)) {
-        Debug::raw("Error: Payload too short to contain a Frame\n");
+        Debug::raw("Error: Payload too short to contain a Frame " + String(length) + "/" + String(sizeof(Frame)) + "\n");
         return;
     }
     
     Frame* frame = (Frame*)payload;
+    unsigned int payloadLength = frame->content_length;
 
     switch (frame->type) {
         case animation:
@@ -164,6 +176,69 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             Debug::raw("Frame type: buffer_size\n");
 
             break;
+        case animation_add:
+            {
+                Debug::raw("Frame type: animation_add\n");
+                const char* name = (char*)(payload + sizeof(Animation));
+                const byte* animation = findAnimation((byte*)name, payloadLength);
+                size_t animationLength = payloadLength - (animation - (byte*)name);
+                // Add logic for handling animation_add here
+                if(!animDB->addAnimation(name, animation, animationLength)){
+                    Debug::error("Failed adding animation\n");
+                }
+                break;
+            }
+        case animation_remove:
+            Debug::raw("Frame type: animation_remove\n");
+            // Add logic for handling animation_remove here
+            break;
+
+        case animation_get:
+            { 
+                Debug::raw("Frame type: animation_get\n");
+                // Add logic for handling animation_get here
+                size_t namesLen = 100;
+                char* pld = (char*)malloc(sizeof(char) * namesLen);
+                char* names = pld + sizeof(Frame);
+                if(!animDB->getAllAnimationNames(names, namesLen)){
+                    Debug::error("Failed reading animation names\n");
+                }
+                Frame namesFrame;
+                namesFrame.type = animation_names;
+                namesFrame.content_length = strlen(names);
+                Debug::info(names);
+                                                           
+                memcpy(pld, &namesFrame, sizeof(namesFrame));         
+            
+                mqtt->publish("external", pld);
+                free(pld);
+                break;
+            }
+
+        case animation_play:
+            {
+                Debug::raw("Frame type: animation_play\n");
+                // Add logic for handling animation_play here
+                const char* name = (char*)(payload + sizeof(Animation));
+                Debug::info(name);
+                size_t len = animDB->getAnimationSize(name);
+                byte* data = (byte*)malloc(len);
+                animDB->getAnimation(name, data, len);
+                
+                //  TUTAJ WYŚWIETLANIE ANIMACJI
+
+                free(data);
+                break;
+            }
+
+        case animation_clear:
+            {
+                Debug::raw("Frame type: animation_clear\n");
+            
+                animDB->clear();
+
+                break;
+            }
         default:
             Debug::raw("Unknown Frame type\n");
             break;

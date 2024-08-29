@@ -56,7 +56,7 @@ void setup()
     }
 
     animDB = new AnimDB();
-    animDB->Print();
+    animDB->print();
 
     mqtt = new MQTT(wifiClient);
 

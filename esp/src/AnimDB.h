@@ -32,13 +32,14 @@ public:
     AnimDB();
     ~AnimDB();
 
-    void Print();
-    void Clear();
+    void print();
+    void clear();
 
     boolean addAnimation(const char* name, const byte* data, size_t length); 
     size_t getAnimationSize(const char* name);
     boolean getAnimation(const char* name, byte* data, size_t length);
     boolean removeAnimation(const char* name);
+    boolean getAllAnimationNames(char* buffer, size_t bufferLength);
 
 private:
     Preferences preferences;
@@ -65,6 +66,7 @@ private:
 };
 
 AnimDB::AnimDB(){
+    FileManager::begin();
     preferences.begin(PREF_NAME);
 
     if(!preferences.isKey(ANIM_NUM_KEY)){
@@ -77,10 +79,10 @@ AnimDB::AnimDB(){
     }
 
     animArr=NULL;
-    Print();
+    print();
 }
 
-void AnimDB::Print(){
+void AnimDB::print(){
     nvs_stats_t nvs_stats;
     esp_err_t err = nvs_get_stats(NULL, &nvs_stats);
     if (err != ESP_OK) {
@@ -94,17 +96,20 @@ void AnimDB::Print(){
     FileManager::getFreeSpace();
 }
 
-void AnimDB::Clear(){
+void AnimDB::clear(){
     preferences.clear();
     FileManager::removeAllFiles();
 }
 
  boolean AnimDB::addAnimation(const char* name, const byte* data, size_t length){
+    unsigned short animNum;
     if(!preferences.isKey(ANIM_NUM_KEY)){
-        Debug::error("Failed adding new animation: animation number key not set\n");
-        return false;
+        animNum = 0;
+        preferences.putUShort(ANIM_NUM_KEY, animNum);
     }
-    unsigned short animNum = preferences.getUShort(ANIM_NUM_KEY);
+    else{
+        animNum = preferences.getUShort(ANIM_NUM_KEY);
+    }
     size_t animArrSize = sizeof(Animation) * animNum;
     if(animArr!=NULL)free(animArr);
     animArr = (Animation*)malloc(animArrSize + sizeof(Animation));
@@ -138,8 +143,12 @@ void AnimDB::Clear(){
                 Debug::error("Failed creating new id\n");
                 return false;
             }
+            if(!addAnimationName(id,name)){
+                return false;
+            }
             addedAnimations = 1;
-            animArr[animNum] = {id, length};
+            animArr[animNum].id = id;
+            animArr[animNum].length =  length;
         }
         if(!addAnimationData(id, data, length)){
             return false;
@@ -262,10 +271,10 @@ boolean AnimDB::getAnimationData(unsigned short id, byte* buff, size_t length){
         return false;
     }
     if(!FileManager::readFile(tempKey, buff, length)){
-        Debug::error("Failed to save animation data (key : " + String(tempKey) + ")\n");
+        Debug::error("Failed to read animation data (key : " + String(tempKey) + ")\n");
         return false;
     }
-    Debug::info("Successfully saved animation data\n");
+    Debug::info("Successfully read animation data\n");
     return true;
 }
 size_t AnimDB::getAnimationSize(const char* name){
@@ -398,5 +407,57 @@ boolean AnimDB::removeAnimationName(unsigned short id){
     }
     preferences.remove(tempKey);
     Debug::info("Successfully remove animation name\n");
+    return true;
+}
+
+boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
+    if (!preferences.isKey(ANIM_NUM_KEY)) {
+        Debug::error("Failed fetching animation names: animation number key not set\n");
+        return false;
+    }
+    
+    unsigned short animNum = preferences.getUShort(ANIM_NUM_KEY);
+    if (animNum == 0) {
+        Debug::error("No animations available in AnimDB\n");
+        return false;
+    }
+
+    size_t animArrSize = sizeof(Animation) * animNum;
+    if (animArr == NULL) {
+        animArr = (Animation*)malloc(animArrSize);
+        if (animArr == NULL) {
+            Debug::error("Failed creating array of animations\n");
+            return false;
+        }
+        if (preferences.getBytes(ANIM_ARR_KEY, animArr, animArrSize) == 0) {
+            Debug::error("Failed reading animations array\n");
+            return false;
+        }
+    }
+    
+    size_t totalLength = 0;
+    
+    for (unsigned short i = 0; i < animNum; i++) {
+        if (!createKey(ANIM_NAME_KEY, animArr[i].id)) {
+            Debug::error("Failed creating key\n");
+            return false;
+        }
+        tempName = preferences.getString(tempKey);
+
+        size_t nameLength = tempName.length();
+        if (totalLength + nameLength + 1 >= bufferLength) {
+            Debug::error("Buffer size too small to hold all animation names\n");
+            return false;
+        }
+
+        strcpy(buffer + totalLength, tempName.c_str());
+        totalLength += nameLength;
+
+        if (i < animNum - 1) {
+            buffer[totalLength++] = ',';
+        }
+    }
+
+    buffer[totalLength] = '\0'; 
     return true;
 }
