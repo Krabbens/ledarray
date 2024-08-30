@@ -21,7 +21,7 @@ client = mqtt.Client()
 def on_connect(client, userdata, flags, rc, esd):
     print(f'Connected with result code {rc}')
     # Połącz się z brokerem
-    client.subscribe(MQTT_TOPIC)
+    client.subscribe("external")
 
 def on_message(client, userdata, msg):
     # Odbieranie wiadomości
@@ -86,7 +86,7 @@ def interactive_menu():
             #file_path = input("Enter file path to add animation: ")
             #send_file(file_path)
             animation_name = input("Enter animation name: ")
-            send_file("image.dat", animation_name)
+            send_file("diff.dat", animation_name)
         
         elif choice == '2':
             name = input("Enter animation name to remove: ").encode('utf-8')
