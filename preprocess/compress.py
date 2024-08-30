@@ -4,7 +4,7 @@ import os, struct
 path = '/home/kuose/render/'
 
 files = [f for f in os.listdir(path) if f.endswith(('png', 'jpg', 'jpeg'))]
-#files.sort()
+files.sort()
 
 diff = bytes()
 
@@ -34,7 +34,7 @@ for file in files:
                         diff += struct.pack('BB', index - 200, convert_to_palette(image[1]))
                     else:
                         diff += struct.pack('BB', index, convert_to_palette(image[1]))
-                
+                #print("frame: ", index, "color: ", convert_to_palette(image[1]))
 
         print(f'Compared {file} with {previous_image.filename}')
     
