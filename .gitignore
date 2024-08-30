@@ -8,3 +8,6 @@ esp/.pio/build/
 blender/cache*
 esp/.pio/build/esp32-s3-devkitc-1/src/main.cpp.o
 mqtt_test/image.dat
+diff.dat
+palette.txt
+.vscode/settings.json
