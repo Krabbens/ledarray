@@ -225,9 +225,9 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                 byte* data = (byte*)malloc(len);
                 animDB->getAnimation(name, data, len);
                 
-                //  TUTAJ WYŚWIETLANIE ANIMACJI
+                delete ledArray;
+                ledArray = new LedArray(data);
 
-                free(data);
                 break;
             }
 

@@ -63,27 +63,27 @@ void setup()
     mqtt->connectToBroker();
     mqtt->subscribe("upper_esp");
 
-    leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
+    // leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
 
-    ledArray = new LedArray(bufferCallback);
+    // ledArray = new LedArray(bufferCallback);
 
-    for (int i = 0; i < 900; i++)
-    {
-        for (int j = 0; j < 400; j++)
-        {
-            leds_fb_test[i * 400 + j] = CRGB::Black;
-        }
-    }
+    // for (int i = 0; i < 900; i++)
+    // {
+    //     for (int j = 0; j < 400; j++)
+    //     {
+    //         leds_fb_test[i * 400 + j] = CRGB::Black;
+    //     }
+    // }
 
-    for (int i = 0; i < 900; i++)
-    {
-        leds_fb_test[i * 400 + i % 400] = CRGB::Red;
-    }
+    // for (int i = 0; i < 900; i++)
+    // {
+    //     leds_fb_test[i * 400 + i % 400] = CRGB::Red;
+    // }
 
-    ledArray->fillBuffer(leds_fb_test);
-    ledArray->swapBuffer();
-    ledArray->fillBuffer(leds_fb_test);
-    ledArray->swapBuffer();
+    // ledArray->fillBuffer(leds_fb_test);
+    // ledArray->swapBuffer();
+    // ledArray->fillBuffer(leds_fb_test);
+    // ledArray->swapBuffer();
 
     // ledArray->fillBuffer(leds_fb_test);
     // ledArray->swapBuffer();
@@ -116,17 +116,18 @@ uint32_t debugTime = 0;
 void loop()
 {
     mqtt->loop();
-    lastMicros = micros();
-    ledArray->nextFrame();
-    debugTime = micros();
-    count++;
-    avgTime += debugTime - lastMicros;
-    if (count == 10000)
+    if (ledArray != NULL && ledArray->isReady())
     {
-        Debug::raw(" INFO: Average time: ");
-        Debug::raw(avgTime / count);
-        Debug::raw("\n");
-        avgTime = 0;
-        count = 0;
+        lastMicros = micros();
+        ledArray->nextFrame();
+        debugTime = micros();
+        count++;
+        avgTime += debugTime - lastMicros;
+        if (count == 1000)
+        {
+            Debug::info("Average time: " + String(avgTime / count));
+            avgTime = 0;
+            count = 0;
+        }
     }
 }
