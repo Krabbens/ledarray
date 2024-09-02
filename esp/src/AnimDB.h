@@ -63,6 +63,9 @@ private:
     boolean createKey(const char* pref);
     boolean createKey(const char* pref, unsigned short id);
     boolean createKey(const char* pref, unsigned short id, const char* suff);
+
+    unsigned short prepareAnimArr(boolean extraSpace = false);
+    bool saveAnimArr(unsigned short animNum);
 };
 
 AnimDB::AnimDB(){
@@ -79,7 +82,37 @@ AnimDB::AnimDB(){
     }
 
     animArr=NULL;
+    
     print();
+}
+
+unsigned short AnimDB::prepareAnimArr(boolean extraSpace){
+    unsigned short animNum;
+    if(!preferences.isKey(ANIM_NUM_KEY) || !preferences.isKey(ANIM_ARR_KEY)){
+        animNum = 0;
+        preferences.putUShort(ANIM_NUM_KEY, animNum);
+        if(animArr != NULL)free(animArr);
+        animArr = (Animation*)malloc(sizeof(Animation));
+        return animNum;
+    }
+    animNum = preferences.getUShort(ANIM_NUM_KEY);
+    if(animArr != NULL && !extraSpace){
+        return animNum = preferences.getUShort(ANIM_NUM_KEY);
+    }
+    if(animArr!=NULL)free(animArr);
+    size_t animArrSize = sizeof(Animation) * animNum;
+    animArr = (Animation*)malloc(animArrSize + sizeof(Animation));
+    size_t err = preferences.getBytes(ANIM_ARR_KEY, animArr, animArrSize);
+
+    return animNum;
+}
+
+boolean AnimDB::saveAnimArr(unsigned short animNum){
+    preferences.putBytes(ANIM_ARR_KEY, animArr, sizeof(Animation) * animNum);
+    preferences.putUShort(ANIM_NUM_KEY, animNum);
+    free(animArr);
+    animArr = NULL;
+    return true;
 }
 
 void AnimDB::print(){
@@ -102,41 +135,21 @@ void AnimDB::clear(){
 }
 
  boolean AnimDB::addAnimation(const char* name, const byte* data, size_t length){
-    unsigned short animNum;
-    if(!preferences.isKey(ANIM_NUM_KEY)){
-        animNum = 0;
-        preferences.putUShort(ANIM_NUM_KEY, animNum);
-    }
-    else{
-        animNum = preferences.getUShort(ANIM_NUM_KEY);
-    }
-    size_t animArrSize = sizeof(Animation) * animNum;
-    if(animArr!=NULL)free(animArr);
-    animArr = (Animation*)malloc(animArrSize + sizeof(Animation));
-    if(animArr == NULL){
-        Debug::error("Failed creating array of animations\n");
-        return false;
-    }
+    unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
         unsigned short id = 0;
-        animArr[0] = {id, length};
-        preferences.putBytes(ANIM_ARR_KEY, animArr, animArrSize);
+        animArr[0].id = id;
+        animArr[0].length = length;
         if(!addAnimationName(id,name)){
             return false;
         }
         if(!addAnimationData(id, data, length)){
             return false;
         }
-        preferences.putBytes(ANIM_ARR_KEY, animArr, animArrSize + sizeof(Animation));
-        preferences.putUShort(ANIM_NUM_KEY, ++animNum);
+        saveAnimArr(++animNum);
     }
     else if(preferences.isKey(ANIM_ARR_KEY)){
-        size_t err = preferences.getBytes(ANIM_ARR_KEY, animArr, animArrSize);
-        if(err == 0){
-            Debug::error("Failed creating array of animations\n");
-        }
         unsigned short id = getAnimationId(name, animNum);
-        unsigned short addedAnimations = 0;
         if(id == USHRT_MAX){ 
             id = getNewId(animNum);
             if(id == USHRT_MAX){
@@ -146,19 +159,14 @@ void AnimDB::clear(){
             if(!addAnimationName(id,name)){
                 return false;
             }
-            addedAnimations = 1;
             animArr[animNum].id = id;
             animArr[animNum].length =  length;
+            animNum++;
         }
         if(!addAnimationData(id, data, length)){
             return false;
         }
-        err = preferences.putBytes(ANIM_ARR_KEY, animArr, animArrSize + addedAnimations * sizeof(Animation));
-        if(err == 0){
-            Debug::error("Failed updating animations array\n");
-            return false;
-        }
-        if(addedAnimations)preferences.putUShort(ANIM_NUM_KEY, ++animNum);
+        saveAnimArr(animNum);
     }
     Debug::info("Successfully added animation\n");
     return true;
@@ -278,22 +286,10 @@ boolean AnimDB::getAnimationData(unsigned short id, byte* buff, size_t length){
     return true;
 }
 size_t AnimDB::getAnimationSize(const char* name){
-    if(!preferences.isKey(ANIM_NUM_KEY)){
-        Debug::error("Failed checking animation size: animation number key not set\n");
-        return 0;
-    }
-    unsigned short animNum = preferences.getUShort(ANIM_NUM_KEY);
+    unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
-        Debug::error("Failed checking animation size: AnimDB is empty\n");
+        Debug::info("AnimDB is empty\n");
         return 0;
-    }
-    size_t animArrSize = sizeof(Animation) * animNum;
-    if(animArr==NULL){
-        animArr = (Animation*)malloc(animArrSize);
-        if(animArr == NULL){
-            Debug::error("Failed creating array of animations\n");
-            return 0;
-        }
     }
     unsigned short id = getAnimationId(name, animNum);
     if(id == USHRT_MAX){ 
@@ -309,22 +305,10 @@ size_t AnimDB::getAnimationSize(const char* name){
 }
 
 boolean AnimDB::getAnimation(const char* name, byte* buff, size_t length){
-    if(!preferences.isKey(ANIM_NUM_KEY)){
-        Debug::error("Failed checking animation size: animation number key not set\n");
-        return false;
-    }
-    unsigned short animNum = preferences.getUShort(ANIM_NUM_KEY);
+    unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
-        Debug::error("Failed checking animation size: AnimDB is empty\n");
-        return false;
-    }
-    size_t animArrSize = sizeof(Animation) * animNum;
-    if(animArr==NULL){
-        animArr = (Animation*)malloc(animArrSize);
-        if(animArr == NULL){
-            Debug::error("Failed creating array of animations\n");
-            return false;
-        }
+        Debug::info("AnimDB is empty\n");
+        return 0;
     }
     unsigned short id = getAnimationId(name, animNum);
     if(id == USHRT_MAX){ 
@@ -338,22 +322,10 @@ boolean AnimDB::getAnimation(const char* name, byte* buff, size_t length){
 }
 
 boolean AnimDB::removeAnimation(const char* name){
-    if(!preferences.isKey(ANIM_NUM_KEY)){
-        Debug::error("Failed checking animation size: animation number key not set\n");
-        return false;
-    }
-    unsigned short animNum = preferences.getUShort(ANIM_NUM_KEY);
+    unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
-        Debug::error("Failed checking animation size: AnimDB is empty\n");
-        return false;
-    }
-    size_t animArrSize = sizeof(Animation) * animNum;
-    if(animArr==NULL){
-        animArr = (Animation*)malloc(animArrSize);
-        if(animArr == NULL){
-            Debug::error("Failed creating array of animations\n");
-            return false;
-        }
+        Debug::info("AnimDB is empty\n");
+        return 0;
     }
     unsigned short id = getAnimationId(name, animNum);
     if(id == USHRT_MAX){ 
@@ -411,28 +383,10 @@ boolean AnimDB::removeAnimationName(unsigned short id){
 }
 
 boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
-    if (!preferences.isKey(ANIM_NUM_KEY)) {
-        Debug::error("Failed fetching animation names: animation number key not set\n");
+    unsigned short animNum = prepareAnimArr(true);
+    if(animNum == 0){
+        Debug::info("AnimDB is empty\n");
         return false;
-    }
-    
-    unsigned short animNum = preferences.getUShort(ANIM_NUM_KEY);
-    if (animNum == 0) {
-        Debug::error("No animations available in AnimDB\n");
-        return false;
-    }
-
-    size_t animArrSize = sizeof(Animation) * animNum;
-    if (animArr == NULL) {
-        animArr = (Animation*)malloc(animArrSize);
-        if (animArr == NULL) {
-            Debug::error("Failed creating array of animations\n");
-            return false;
-        }
-        if (preferences.getBytes(ANIM_ARR_KEY, animArr, animArrSize) == 0) {
-            Debug::error("Failed reading animations array\n");
-            return false;
-        }
     }
     
     size_t totalLength = 0;

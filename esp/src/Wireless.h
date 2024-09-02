@@ -33,7 +33,8 @@ private:
 Wireless::Wireless() {
     Debug::info("Wireless object created.");
     preferences.begin("wireless", false);
-
+    preferences.putString("ssid", "UPC242899811");
+    preferences.putString("password", "XK4RGVPV");
 
     //clearCredentials();
     if (preferences.isKey("ssid")) {

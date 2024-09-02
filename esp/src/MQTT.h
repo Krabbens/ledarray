@@ -222,11 +222,16 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                 const char* name = (char*)(payload + sizeof(Animation));
                 Debug::info(name);
                 size_t len = animDB->getAnimationSize(name);
-                byte* data = (byte*)malloc(len);
-                animDB->getAnimation(name, data, len);
-                
-                delete ledArray;
-                ledArray = new LedArray(data);
+                if(len == 0){
+                    Debug::info("Animation name not found");
+                }
+                else{
+                    byte* data = (byte*)malloc(len);
+                    if(animDB->getAnimation(name, data, len)){
+                        delete ledArray;
+                        ledArray = new LedArray(data);
+                    }
+                }
 
                 break;
             }
