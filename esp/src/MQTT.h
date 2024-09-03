@@ -189,10 +189,15 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                 break;
             }
         case animation_remove:
-            Debug::raw("Frame type: animation_remove\n");
-            // Add logic for handling animation_remove here
-            break;
-
+            {
+                Debug::raw("Frame type: animation_remove\n");
+                const char* name = (char*)(payload + sizeof(Animation));
+                Debug::info(name);
+                if(!animDB->removeAnimation(name)){
+                    Debug::error("Failed removing animation\n");
+                }
+                break;
+            }
         case animation_get:
             { 
                 Debug::raw("Frame type: animation_get\n");

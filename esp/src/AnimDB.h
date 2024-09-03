@@ -249,7 +249,7 @@ unsigned short AnimDB::getAnimationId(const char* name, unsigned short animNum){
         tempName = preferences.getString(tempKey);
         Debug::info("comparing ["+ String(tempName) + " , "+ String(name) + "]\n");
         if(strcmp(name, tempName.c_str()) == 0){
-            Debug::info("Found existing name\n");
+            Debug::info("Found existing name, ID: " + String(id) + "\n");
             return id;
         }
     }
@@ -344,14 +344,10 @@ boolean AnimDB::removeAnimation(const char* name){
             if(animArr[i].id == id)found = true;
         }
         else{
-            animArr[i] = animArr[i-1];
+            animArr[i-1] = animArr[i];
         }
     }
-    animNum--;
-    preferences.putBytes(ANIM_ARR_KEY, animArr, sizeof(Animation) * animNum);
-    preferences.putUShort(ANIM_NUM_KEY, animNum);
-    free(animArr);
-    animArr = NULL;
+    saveAnimArr(--animNum);
     return true;
 }
 
