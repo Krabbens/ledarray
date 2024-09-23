@@ -1,4 +1,6 @@
 
+import 'package:conn_app/enums/connectivity_status.dart';
+import 'package:conn_app/views/pre_connection_view.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';  // File picker package needed to upload files
 import 'dart:typed_data';
@@ -35,6 +37,17 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
       //Get loaded animations from esp
 
       items = ['Item 1', 'Item 2', 'Item 3'];
+    });
+
+    controller.espStatus.listen((event) {
+      if (event != ConnectivityStatus.connected) {
+        print('ESP is disconnected');
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PreConnectionView()),
+        );
+      }
     });
   }
 
