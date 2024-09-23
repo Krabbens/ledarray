@@ -13,7 +13,7 @@ void decompTask(void *param);
 class LedArray
 {
 public:
-    LedArray(uint8_t *file);
+    LedArray(uint8_t *file, size_t fileSize);
     ~LedArray();
 
     void fillBuffer(CRGB *input);
@@ -28,6 +28,8 @@ public:
     CRGB *buffer_ptr;
     CRGB *other_buffer;
     uint8_t *file;
+    size_t fileSize;
+    size_t fileOffset = 0;
 
     bool doneProcessing = false;
 
@@ -51,7 +53,7 @@ LedArray::~LedArray()
     free(leds_bb);
 }
 
-LedArray::LedArray(uint8_t *file)
+LedArray::LedArray(uint8_t *file, size_t fileSize)
 {
     leds_fb = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
     leds_bb = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
@@ -73,6 +75,7 @@ LedArray::LedArray(uint8_t *file)
     FastLED.setBrightness(10);
 
     this->file = file;
+    this->fileSize = fileSize;
 
     swapBuffer();
     startDecompTask();
@@ -107,6 +110,7 @@ void LedArray::nextFrame()
 {
     if (led_index == 0)
     {
+        doneProcessing = false;
         startDecompTask();
     }
     controllers[0]->setLeds(buffer_ptr, NUM_LEDS);
@@ -138,7 +142,7 @@ void LedArray::nextFrame()
 void decompTask(void *param)
 {
     LedArray *ledArray = (LedArray *)param;
-    Decompressor::decompress(ledArray->file, ledArray->other_buffer, 0, 900);
+    Decompressor::decompress(ledArray->file, ledArray->other_buffer, ledArray->fileSize, 400 * 900, ledArray->fileOffset);
     ledArray->doneProcessing = true;
     vTaskDelete(NULL);
 }

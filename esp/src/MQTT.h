@@ -231,10 +231,10 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                     Debug::info("Animation name not found");
                 }
                 else{
-                    byte* data = (byte*)malloc(len);
+                    byte* data = (byte*)ps_malloc(len);
                     if(animDB->getAnimation(name, data, len)){
                         delete ledArray;
-                        ledArray = new LedArray(data);
+                        ledArray = new LedArray(data, len);
                     }
                 }
 
