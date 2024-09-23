@@ -43,7 +43,9 @@ dependencies:
   rxdart: ^0.28.0
   http: ^1.2.2
   wifi_iot: ^0.3.16
-  
+  file_picker: ^8.1.2
+  archive: ^3.3.1
+
 
 dev_dependencies:
   flutter_test:

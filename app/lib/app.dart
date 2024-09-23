@@ -19,8 +19,13 @@ class App extends StatelessWidget {
         '/pre-connection': (context) => const PreConnectionView(),
         '/scan-wifi': (context) => const RegisterNetwork(),
         '/permission': (context) => const PermissionView(),
+        //'/animation-list': (context) => ListOfAnimations(controller: MQTTController('esp32/alive_status')),
+        //'/settings': (context) => SettingsView(controller: MQTTController('esp32/alive_status')),
+        //'/upload': (context) => SecondView(controller: MQTTController('esp32/alive_status')),
+
       },
       home: const PermissionView(),
+      //home: ListOfAnimations(controller: MQTTController('esp32/alive_status')),
     );
   }
 }

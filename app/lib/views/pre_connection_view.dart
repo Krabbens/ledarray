@@ -1,3 +1,4 @@
+import 'package:conn_app/views/list_of_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:conn_app/views/loading_box.dart';
 import 'package:conn_app/controllers/mqtt_controller.dart';
@@ -140,8 +141,23 @@ class _PreConnectionViewState extends State<PreConnectionView> {
           }
 
           if (_espStatus == ConnectivityStatus.connected) {
-            return const Center(
-              child: Text('Connected to ESP32'),
+            return Center(
+              child: Column(
+                children: [
+                  Text('Connected to ESP32'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ListOfAnimations()), // Navigate to ListOfAnimations
+                          //ListOfAnimations(controller: _controller)),
+                        );
+                      },
+                      child: const Text('Continue'),
+                    ),
+                ],
+              )
             );
           }
 

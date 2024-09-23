@@ -11,6 +11,7 @@ class NetworkRegisterForm extends StatefulWidget {
 }
 
 class _NetworkRegisterFormState extends State<NetworkRegisterForm> {
+
   late HttpEspController _espController;
 
   String _ssid = '';

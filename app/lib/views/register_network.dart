@@ -15,7 +15,6 @@ class RegisterNetwork extends StatefulWidget {
 class _RegisterNetworkState extends State<RegisterNetwork> {
   late InternetController _controller;
 
-
   InternetStatus _internetStatus = InternetStatus.unknown;
   
 
