@@ -10,12 +10,7 @@ import 'dart:typed_data';
 
 import 'package:typed_data/src/typed_buffer.dart';
 
-const int FRAME_TYPE_ANIMATION_ADD = 5;
-const int FRAME_TYPE_ANIMATION_REMOVE = 6;
-const int FRAME_TYPE_ANIMATION_GET = 7;
-const int FRAME_TYPE_ANIMATION_PLAY = 8;
-const int FRAME_TYPE_ANIMATION_CLEAR = 9;
-const int FRAME_TYPE_ANIMATION_NAMES = 10;
+import 'package:conn_app/enums/frame.dart';
 
 class MQTTController {
   final String server = '5686adbdc3644dca8e63a851e72c3b21.s1.eu.hivemq.cloud';
@@ -110,7 +105,7 @@ class MQTTController {
     _connectionStatusController.add(ConnectivityStatus.connected);
 
     Timer.periodic(const Duration(seconds: 10), (timer) {
-      publish('1', 'esp32/check_alive');
+      sendFrame(FrameType.checkAlive, "upper_esp");
       if (DateTime.now().millisecondsSinceEpoch - _lastRecvMessage > 20000 || _lastRecvMessage == -1) {
         _espControllerStatus.add(ConnectivityStatus.disconnected);
       }
@@ -126,8 +121,10 @@ class MQTTController {
   }
 
   void onMessage(String topic, MqttPublishMessage message) {
+    final buffer = message.payload.message;
+    final Frame frame = Frame.fromBytes(buffer);
     final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
-    if (payload == "1") {
+    if (frame.type == FrameType.aliveStatus) {
       _espControllerStatus.add(ConnectivityStatus.connected);
       _lastRecvMessage = DateTime.now().millisecondsSinceEpoch;
     }
@@ -167,20 +164,11 @@ class MQTTController {
     print('Received frame type $frameType with data of length ${data.length}');
   }
 
-  void sendFrame(int frameType, String topic, [Uint8List? data]) {
-    int contentLength = data == null ? 0 : data.length + 1;  // +1 for the null terminator
-    final ByteData frame = ByteData(8 + contentLength);
-    
-    frame.setUint32(0, frameType, Endian.little);
-    frame.setUint32(4, contentLength, Endian.little);
-    
-    if (data != null) {
-      frame.buffer.asUint8List().setRange(8, 8 + data.length, data);
-      frame.setUint8(8 + data.length, 0);  // null terminator
-    }
-
+  void sendFrame(FrameType frameType, String topic, [Uint8List? data]) {
+    int contentLength = data == null ? 0 : data.length;
+    final Frame frame = Frame(frameType, contentLength);
     final builder = MqttClientPayloadBuilder();
-    builder.addBuffer(frame.buffer as Uint8Buffer);
+    builder.addBuffer(frame.toBytes());
     client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
 
     print('Sent frame type $frameType with data of length $contentLength');
@@ -194,6 +182,6 @@ class MQTTController {
     final Uint8List dataToSend = Uint8List.fromList(nameWithNull + fileData);
 
     // Send the frame with the file data
-    sendFrame(FRAME_TYPE_ANIMATION_ADD, topic, dataToSend);
+    sendFrame(FrameType.animation, topic, dataToSend);
   }
 }
