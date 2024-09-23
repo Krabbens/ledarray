@@ -6,17 +6,19 @@ import 'package:conn_app/controllers/mqtt_controller.dart';
 
 
 class ListOfAnimations extends StatefulWidget {
-  ListOfAnimations({super.key});
+  final MQTTController controller;
+  ListOfAnimations({required this.controller});
+  //ListOfAnimations({super.key});
 
   @override
-  _ListOfAnimationsState createState() => _ListOfAnimationsState();
+  _ListOfAnimationsState createState() => _ListOfAnimationsState(controller: controller);
   //_ListOfAnimationsState(controller: controller);
 }
 
 class _ListOfAnimationsState extends State<ListOfAnimations> {
 
-  MQTTController controller = MQTTController('upper_esp');
-  //_ListOfAnimationsState({required this.controller});
+  final MQTTController controller;
+  _ListOfAnimationsState({required this.controller});
 
   List<String> items = ['Item 1', 'Item 2', 'Item 3']; // List of items
 
