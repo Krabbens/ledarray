@@ -34,7 +34,6 @@ Wireless::Wireless() {
     Debug::info("Wireless object created.");
     preferences.begin("wireless", false);
 
-
     //clearCredentials();
     if (preferences.isKey("ssid")) {
         Debug::info("Last known network found.");
