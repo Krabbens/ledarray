@@ -125,6 +125,12 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
                     });
                   },
                 ),
+                ElevatedButton(
+                  onPressed: () {
+                    controller.sendFrame(FrameType.animationStop, "upper_esp");
+                  },
+                  child: const Text('Stop playing'),
+                ),
                 // Go to Upload View Button (top-right)
                 ElevatedButton(
                   onPressed: () {
@@ -206,8 +212,7 @@ class _SecondViewState extends State<SecondView> {
   void _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       withData: true,
-      type: FileType.custom,
-      allowedExtensions: ['dat', 'zip'],
+      type: FileType.any,
     );
 
     if (result != null) {

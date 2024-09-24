@@ -15,6 +15,7 @@ enum FrameType {
   animationNames,
   getSize,
   infoSize,
+  animationStop,
 }
 
 class Frame {
