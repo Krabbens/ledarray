@@ -105,7 +105,7 @@ class MQTTController {
     _connectionStatusController.add(ConnectivityStatus.connected);
 
     Timer.periodic(const Duration(seconds: 10), (timer) {
-      sendFrame(FrameType.checkAlive, "upper_esp");
+      sendFrame(FrameType.animationGet, "upper_esp");
       if (DateTime.now().millisecondsSinceEpoch - _lastRecvMessage > 20000 || _lastRecvMessage == -1) {
         _espControllerStatus.add(ConnectivityStatus.disconnected);
       }
@@ -121,12 +121,25 @@ class MQTTController {
   }
 
   void onMessage(String topic, MqttPublishMessage message) {
-    final buffer = message.payload.message;
+    final Uint8Buffer buffer = message.payload.message;
+    int size = buffer.length;
+    if(size < 8){
+      print('Payload to short $size');
+      return;
+    }
     final Frame frame = Frame.fromBytes(buffer);
+    for (int i = 0; i < 8; i++) {
+      buffer.removeAt(0);
+    }
     final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
     if (frame.type == FrameType.aliveStatus) {
       _espControllerStatus.add(ConnectivityStatus.connected);
       _lastRecvMessage = DateTime.now().millisecondsSinceEpoch;
+    }
+    else if (frame.type == FrameType.animationNames){
+      final resultString = MqttPublishPayload.bytesToStringAsString(buffer);
+      List<String> result = resultString.split(',');
+      print(result);
     }
     _messagesController.add(payload);
   }
