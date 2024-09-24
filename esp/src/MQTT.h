@@ -178,10 +178,12 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
         case animation_add:
             {
                 Debug::raw("Frame type: animation_add\n");
-                const char* name = (char*)(payload + sizeof(Animation));
+                const char* name = (char*)(payload + sizeof(Frame));
+                for(int i=0; i < 40; i++){
+                    Debug::raw("<" +  String(static_cast<int>(payload[i])) + ">");
+                }
                 const byte* animation = findAnimation((byte*)name, payloadLength);
                 size_t animationLength = payloadLength - (animation - (byte*)name);
-                // Add logic for handling animation_add here
                 if(!animDB->addAnimation(name, animation, animationLength)){
                     Debug::error("Failed adding animation\n");
                 }
@@ -190,7 +192,7 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
         case animation_remove:
             {
                 Debug::raw("Frame type: animation_remove\n");
-                const char* name = (char*)(payload + sizeof(Animation));
+                const char* name = (char*)(payload + sizeof(Frame));
                 Debug::info(name);
                 if(!animDB->removeAnimation(name)){
                     Debug::error("Failed removing animation\n");
@@ -223,7 +225,7 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             {
                 Debug::raw("Frame type: animation_play\n");
                 // Add logic for handling animation_play here
-                const char* name = (char*)(payload + sizeof(Animation));
+                const char* name = (char*)(payload + sizeof(Frame));
                 Debug::info(name);
                 size_t len = animDB->getAnimationSize(name);
                 if(len == 0){
