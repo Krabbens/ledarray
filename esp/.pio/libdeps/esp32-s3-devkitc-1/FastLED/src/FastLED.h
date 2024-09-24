@@ -90,6 +90,7 @@ enum ESPIChipsets {
 	SM16716,  ///< SM16716 LED chipset
 	P9813,    ///< P9813 LED chipset
 	APA102,   ///< APA102 LED chipset
+	APA2020,  ///< APA102-2020-8A with gamma
 	SK9822,   ///< SK9822 LED chipset
 	SK9822HD, ///< SK9822 LED chipset with 5-bit gamma correction
 	DOTSTAR,  ///< APA102 LED chipset alias
@@ -275,6 +276,7 @@ public:
 			case APA102HD: { static APA102ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822: { static SK9822Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822HD: { static SK9822ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case APA2020: { static APA2020Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE, BUS> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 		}
 	}
 
@@ -288,6 +290,7 @@ public:
 			case APA102HD: { static APA102ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822: { static SK9822Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 		    case SK9822HD: { static SK9822ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case APA2020: { static APA2020Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER, SPI_DATA_RATE> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 		}
 	}
 
@@ -300,6 +303,7 @@ public:
 			case APA102HD: { static APA102ControllerHD<DATA_PIN, CLOCK_PIN> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822: { static SK9822Controller<DATA_PIN, CLOCK_PIN> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822HD: { static SK9822ControllerHD<DATA_PIN, CLOCK_PIN> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case APA2020: { static APA2020Controller<DATA_PIN, CLOCK_PIN> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 		}
 	}
 
@@ -310,6 +314,7 @@ public:
 			case APA102HD: { static APA102ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822: { static SK9822Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 			case SK9822HD: { static SK9822ControllerHD<DATA_PIN, CLOCK_PIN, RGB_ORDER> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
+			case APA2020: { static APA2020Controller<DATA_PIN, CLOCK_PIN, RGB_ORDER> c; return addLeds(&c, data, nLedsOrOffset, nLedsIfOffset); }
 		}
 	}
 

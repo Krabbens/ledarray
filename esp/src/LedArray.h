@@ -40,15 +40,29 @@ LedArray::~LedArray()
 
 LedArray::LedArray()
 {
-    leds_fb = (CRGB*)malloc(sizeof(CRGB) * 400 * 900);
-    leds_bb = (CRGB*)malloc(sizeof(CRGB) * 400 * 900);
+    leds_fb = (CRGB*)malloc(sizeof(CRGB) * 400 * 800);
+    leds_bb = (CRGB*)malloc(sizeof(CRGB) * 400 * 800);
     buffer_ptr = leds_bb;
+
+    for (int i = 0; i < 400 * 800; i++)
+    {
+        leds_fb[i] = CRGB::Black;
+        leds_bb[i] = CRGB::Black;
+    }
+
+    // one led active per frame
+
+    for (int i = 0; i < 800; i++)
+    {
+        leds_fb[i * 400 + i % 400] = CRGB::Red;
+        leds_bb[i * 400 + i % 400] = CRGB::Red;
+    }
 
     // controller_1 = &FastLED.addLeds<SK9822, 11, 13, BGR>(buffer_ptr, NUM_LEDS);
     // controller_2 = &FastLED.addLeds<SK9822, 10, 12, BGR>(buffer_ptr, NUM_LEDS, NUM_LEDS);
 
-    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB, DATA_RATE_MHZ(24), 0>(buffer_ptr, NUM_LEDS);
-    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB, DATA_RATE_MHZ(24), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
+    controllers[0] = &FastLED.addLeds<APA102, 2, 1, RGB, DATA_RATE_MHZ(15), 0>(buffer_ptr, NUM_LEDS);
+    controllers[1] = &FastLED.addLeds<APA102, 4, 3, RGB, DATA_RATE_MHZ(15), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
     //controllers[2] = &FastLED.addLeds<SK9822, 6, 5, BGR>(buffer_ptr + NUM_LEDS * 2, NUM_LEDS);
     //controllers[3] = &FastLED.addLeds<SK9822, 8, 7, BGR>(buffer_ptr + NUM_LEDS * 3, NUM_LEDS);
     // controllers[4] = &FastLED.addLeds<SK9822, 10, 9, BGR>(buffer_ptr + NUM_LEDS * 4, NUM_LEDS);
@@ -57,14 +71,12 @@ LedArray::LedArray()
     // controllers[7] = &FastLED.addLeds<SK9822, 16, 15, BGR>(buffer_ptr + NUM_LEDS * 7, NUM_LEDS);
     // controllers[8] = &FastLED.addLeds<SK9822, 18, 17, BGR>(buffer_ptr + NUM_LEDS * 8, NUM_LEDS);
     // controllers[9] = &FastLED.addLeds<SK9822, 48, 47, BGR>(buffer_ptr + NUM_LEDS * 9, NUM_LEDS);
-
-    FastLED.setBrightness(10);
 }
 
 void LedArray::fillBuffer(CRGB *leds)
 {
     CRGB *inactive_buffer = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
-    memcpy(inactive_buffer, leds, sizeof(CRGB) * 400 * 900);
+    memcpy(inactive_buffer, leds, sizeof(CRGB) * 400 * 800);
 }
 
 void LedArray::swapBuffer()
@@ -75,9 +87,8 @@ void LedArray::swapBuffer()
 
 void LedArray::nextFrame()
 {
-    // Debug::raw(" INFO: Next frame: ");
-    // Debug::raw(led_index);
-
+    Debug::raw(" INFO: Next frame: ");
+    Debug::raw(led_index);
     
 
     //FastLED.show();
@@ -101,14 +112,14 @@ void LedArray::nextFrame()
     controllers[1]->writePixels();
     controllers[1]->releaseSPI();
 
-    // Debug::raw(" INFO: Show time: ");
-    // Debug::raw(micros() - start);
+    Debug::raw(" INFO: Show time: ");
+    Debug::raw(micros() - start);
 
-    // Debug::raw(" INFO: Setting leds: ");
-    // Debug::raw(led_index);
-    // Debug::raw("\n");
+    Debug::raw(" INFO: Setting leds: ");
+    Debug::raw(led_index);
+    Debug::raw("\n");
 
-    if (led_index == 900)
+    if (led_index == 800)
     {
         led_index = 0;
         swapBuffer();

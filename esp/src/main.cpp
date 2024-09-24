@@ -24,8 +24,8 @@ CRGB *leds_bb_test;
 
 void setup()
 {
-  Debug::init();
-  Debug::info("Starting...");
+  //Debug::init();
+  //Debug::info("Starting...");
   // wifiClient = new WiFiClientSecure();
   // wireless = new Wireless();
   // while (!wireless->isConnected())
@@ -42,26 +42,7 @@ void setup()
   // leds_bb_test = (CRGB*)malloc(sizeof(CRGB) * NUM_LEDS * 10 * 30 * 4);
 
   ledArray = new LedArray();
-
-  // rainbow animation 900 frames of changing color of all leds
-  for (int i = 0; i < 900; i++)
-  {
-    for (int j = 0; j < 400; j++)
-    {
-      leds_fb_test[i * 400 + j] = CRGB::Black;
-    }
-  }
-
-  for (int i = 0; i < 900; i++)
-  {
-    leds_fb_test[i * 400 + i % 400] = CRGB::Red;
-  }
   
-
-  ledArray->fillBuffer(leds_fb_test);
-  ledArray->swapBuffer();
-  ledArray->fillBuffer(leds_fb_test);
-  ledArray->swapBuffer();
 
   // ledArray->fillBuffer(leds_fb_test);
   // ledArray->swapBuffer();
@@ -106,7 +87,6 @@ void loop()
       avgTime = 0;
       count = 0;
     }
-    delay(100);
 }
 
 

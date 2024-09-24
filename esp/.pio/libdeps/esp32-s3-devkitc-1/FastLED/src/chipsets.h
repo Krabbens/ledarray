@@ -275,6 +275,27 @@ public:
   APA102ControllerHD(const APA102ControllerHD&) = delete;
 };
 
+template <
+	uint8_t DATA_PIN,
+	uint8_t CLOCK_PIN,
+	EOrder RGB_ORDER = RGB,
+	uint32_t SPI_SPEED = DATA_RATE_MHZ(5),
+	uint8_t BUS = 0
+>
+class APA2020Controller : public APA102Controller<
+	DATA_PIN,
+	CLOCK_PIN, 
+	RGB_ORDER,
+	SPI_SPEED,
+	BUS,
+	kFiveBitGammaCorrectionMode_BitShift,
+	uint32_t(0x00000000),
+	uint32_t(0xFFFFFFFF)> {
+public:
+  APA2020Controller() = default;
+  APA2020Controller(const APA2020Controller&) = delete;
+};
+
 /// SK9822 controller class. It's exactly the same as the APA102Controller protocol but with a different END_FRAME and default SPI_SPEED.
 /// @tparam DATA_PIN the data pin for these LEDs
 /// @tparam CLOCK_PIN the clock pin for these LEDs
