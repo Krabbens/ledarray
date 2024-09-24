@@ -109,9 +109,12 @@ class MQTTController {
     _connectionStatusController.add(ConnectivityStatus.connected);
 
     Timer.periodic(const Duration(seconds: 10), (timer) {
-      sendFrame(FrameType.animationGet, "upper_esp");
+      sendFrame(FrameType.checkAlive, "upper_esp");
       if (DateTime.now().millisecondsSinceEpoch - _lastRecvMessage > 20000 || _lastRecvMessage == -1) {
         _espControllerStatus.add(ConnectivityStatus.disconnected);
+      }
+      else{
+        sendFrame(FrameType.animationGet, "upper_esp");
       }
     });
   }

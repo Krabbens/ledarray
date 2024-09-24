@@ -9,7 +9,7 @@ import 'package:conn_app/controllers/mqtt_controller.dart';
 
 class ListOfAnimations extends StatefulWidget {
   final MQTTController controller;
-  ListOfAnimations({required this.controller});
+  const ListOfAnimations({super.key, required this.controller});
   //ListOfAnimations({super.key});
 
   @override
@@ -36,7 +36,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
     setState(() {
       //Get loaded animations from esp
 
-      items = ['Item 1', 'Item 2', 'Item 3'];
+      items = [];
     });
 
     controller.espStatus.listen((event) {
@@ -45,9 +45,15 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => PreConnectionView()),
+          MaterialPageRoute(builder: (context) => const PreConnectionView()),
         );
       }
+    });
+
+    controller.fileNamesStream.listen((fileNames){
+      setState(() {
+        items = fileNames;
+      });
     });
   }
 
@@ -66,7 +72,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('List of animations'),
+        title: const Text('List of animations'),
       ),
       body: Column(
         children: [
@@ -77,11 +83,11 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
               children: [
                 // Settings Button (top-left)
                 IconButton(
-                  icon: Icon(Icons.settings),
+                  icon: const Icon(Icons.settings),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SettingsView(controller: this.controller)), // Navigate to SettingsView
+                      MaterialPageRoute(builder: (context) => SettingsView(controller: controller)), // Navigate to SettingsView
                     ).then((_) {
                       _runOnLoad(); // Call the function when returning
                     });
@@ -92,12 +98,12 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => SecondView(controller: this.controller)), // Navigate to SecondView
+                      MaterialPageRoute(builder: (context) => SecondView(controller: controller)), // Navigate to SecondView
                     ).then((_) {
                       _runOnLoad(); // Call the function when returning
                     });
                   },
-                  child: Text('Upload a new animation'),
+                  child: const Text('Upload a new animation'),
                 ),
               ],
             ),
@@ -106,7 +112,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
           Expanded(
             child: ListView.separated(
               itemCount: items.length,
-              separatorBuilder: (context, index) => Divider(),  // Divider between items
+              separatorBuilder: (context, index) => const Divider(),  // Divider between items
               itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -145,7 +151,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
 
 class SecondView extends StatefulWidget {
   final MQTTController controller;
-  SecondView({required this.controller});
+  const SecondView({super.key, required this.controller});
 
   @override
   _SecondViewState createState() => _SecondViewState(controller: controller);
@@ -157,7 +163,7 @@ class _SecondViewState extends State<SecondView> {
 
   String? _fileName; // To store the file name
   Uint8List? _fileBytes; // To store file bytes
-  TextEditingController _textController = TextEditingController();  // Controller to modify file name
+  final TextEditingController _textController = TextEditingController();  // Controller to modify file name
 
   void _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -186,7 +192,7 @@ class _SecondViewState extends State<SecondView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Uploading a file'),
+        title: const Text('Uploading a file'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -197,31 +203,31 @@ class _SecondViewState extends State<SecondView> {
           children: [
             ElevatedButton(
               onPressed: _pickFile,
-              child: Text('Pick a .dat file'),
+              child: const Text('Pick a .dat file'),
             ),
             if (_fileName != null) ...[
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(_fileName ?? ''),
               TextField(
                   controller: _textController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: 'Edit animation name',
                   ),
                 ),
             ],
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: (_fileName != null && _fileBytes != null && _fileBytes!.isNotEmpty)
                   ? () {
                       _sendFile();
                       Navigator.pop(context);  // Go back to FirstView
                     }
-                  : null,  // Disable button if no file is selected or file length is 0
-              child: Text('Send the animation'),
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _fileName != null ? null : Colors.grey,  // Grey color when inactive
-              ),
+              ),  // Disable button if no file is selected or file length is 0
+              child: Text('Send the animation'),
             ),
           ],
           )
@@ -234,7 +240,7 @@ class _SecondViewState extends State<SecondView> {
 
 class SettingsView extends StatelessWidget {
   final MQTTController controller;
-  SettingsView({required this.controller});
+  const SettingsView({super.key, required this.controller});
 
   // Simulated connection status: 0 for not connected, 1 for connected
   final int connectionStatus = 1; // Change this to 0 or 1 to simulate different states
@@ -244,7 +250,7 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: const Text('Settings'),
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 20.0), // Add space from the top
@@ -254,28 +260,28 @@ class SettingsView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('Connection with ESP: ${connectionStatus == 1 ? 'Connected' : 'Not Connected'}'),
-                SizedBox(width: 20), // Space between rows
+                const SizedBox(width: 20), // Space between rows
                 ElevatedButton(
                   onPressed: () {
                     // Action to perform on disconnect
                     print('Disconnected from ESP');
                   },
-                  child: Text('Disconnect'),
+                  child: const Text('Disconnect'),
                 )
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text('Sranie w banie: ${connectionStatus == 1 ? 'XD!' : 'XD?'}'),
-                SizedBox(width: 20), // Space between rows
+                const SizedBox(width: 20), // Space between rows
                 ElevatedButton(
                   onPressed: () {
                     // Action to perform on disconnect
                     print('Sraken');
                   },
-                  child: Text('Sraken'),
+                  child: const Text('Sraken'),
                 )
               ],
             ),
