@@ -192,19 +192,27 @@ class MQTTController {
     final Frame frame = Frame(frameType, contentLength);
     final builder = MqttClientPayloadBuilder();
     builder.addBuffer(frame.toBytes());
+    Uint8Buffer buffer = Uint8Buffer();
+    if(data != null){
+      buffer.addAll(data);
+    }
     client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
 
     print('Sent frame type $frameType with data of length $contentLength');
   }
 
-  void sendFile(Uint8List fileData, String animationName, String topic) async {
-    // Prepare the animation name with a null terminator
-    final List<int> nameWithNull = utf8.encode(animationName) + [0];
+  void sendAnimation(Uint8List fileData, String animationName, String topic) async {
+    
+    Uint8List nameWithNull = Uint8List.fromList(utf8.encode(animationName + '\0'));
+    Uint8List dataToSend = Uint8List(nameWithNull.length + fileData.length);
+    dataToSend.setRange(0, nameWithNull.length, nameWithNull);
+    dataToSend.setRange(nameWithNull.length, dataToSend.length, fileData);
 
-    // Prepare the final data to send: [animationName + fileData]
-    final Uint8List dataToSend = Uint8List.fromList(nameWithNull + fileData);
+    sendFrame(FrameType.animationAdd, topic, dataToSend);
+  }
 
-    // Send the frame with the file data
-    sendFrame(FrameType.animation, topic, dataToSend);
+  void sendString(FrameType frameType, String topic, String message){
+    Uint8List uint8list = Uint8List.fromList(utf8.encode(message));
+    sendFrame(frameType, topic, uint8list);
   }
 }
