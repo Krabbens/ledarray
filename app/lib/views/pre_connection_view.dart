@@ -150,7 +150,7 @@ class _PreConnectionViewState extends State<PreConnectionView> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ListOfAnimations()), // Navigate to ListOfAnimations
+                          MaterialPageRoute(builder: (context) => ListOfAnimations(controller: _controller)), // Navigate to ListOfAnimations
                           //ListOfAnimations(controller: _controller)),
                         );
                       },

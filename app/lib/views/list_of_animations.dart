@@ -1,4 +1,6 @@
 
+import 'package:conn_app/enums/connectivity_status.dart';
+import 'package:conn_app/views/pre_connection_view.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';  // File picker package needed to upload files
 import 'dart:typed_data';
@@ -6,17 +8,19 @@ import 'package:conn_app/controllers/mqtt_controller.dart';
 
 
 class ListOfAnimations extends StatefulWidget {
-  ListOfAnimations({super.key});
+  final MQTTController controller;
+  ListOfAnimations({required this.controller});
+  //ListOfAnimations({super.key});
 
   @override
-  _ListOfAnimationsState createState() => _ListOfAnimationsState();
+  _ListOfAnimationsState createState() => _ListOfAnimationsState(controller: controller);
   //_ListOfAnimationsState(controller: controller);
 }
 
 class _ListOfAnimationsState extends State<ListOfAnimations> {
 
-  MQTTController controller = MQTTController('upper_esp');
-  //_ListOfAnimationsState({required this.controller});
+  final MQTTController controller;
+  _ListOfAnimationsState({required this.controller});
 
   List<String> items = ['Item 1', 'Item 2', 'Item 3']; // List of items
 
@@ -33,6 +37,17 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
       //Get loaded animations from esp
 
       items = ['Item 1', 'Item 2', 'Item 3'];
+    });
+
+    controller.espStatus.listen((event) {
+      if (event != ConnectivityStatus.connected) {
+        print('ESP is disconnected');
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => PreConnectionView()),
+        );
+      }
     });
   }
 
