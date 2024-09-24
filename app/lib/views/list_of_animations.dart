@@ -1,6 +1,6 @@
 
 import 'package:conn_app/enums/connectivity_status.dart';
-import 'package:conn_app/views/pre_connection_view.dart';
+import 'package:conn_app/enums/frame.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';  // File picker package needed to upload files
 import 'dart:typed_data';
@@ -22,7 +22,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
   final MQTTController controller;
   _ListOfAnimationsState({required this.controller});
 
-  List<String> items = ['Item 1', 'Item 2', 'Item 3']; // List of items
+  List<String> items = []; // List of items
 
   @override
   void initState() {
@@ -35,18 +35,14 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
 
     setState(() {
       //Get loaded animations from esp
-
-      items = [];
+      controller.sendFrame(FrameType.animationGet, "upper_esp");
     });
 
     controller.espStatus.listen((event) {
       if (event != ConnectivityStatus.connected) {
         print('ESP is disconnected');
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PreConnectionView()),
-        );
+        Navigator.pushNamedAndRemoveUntil( context, '/pre-connection', (route) => false);
       }
     });
 
@@ -57,15 +53,20 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
     });
   }
 
-  void _deleteItem(int index) {
-    setState(() {
-      items.removeAt(index); // Remove item from the list
-    });
+  void _deleteItem(String item) {
+    //setState(() {
+      //items.removeAt(index); // Remove item from the list
+    //});
+    print('Deleting $item');
+
+    controller.sendString(FrameType.animationRemove, "upper_esp", item);
   }
 
   void _playItem(String item) {
     // Placeholder function for the "Play" button action
     print('Playing $item');
+
+    controller.sendString(FrameType.animationPlay, "upper_esp", item);
   }
 
   @override
@@ -73,6 +74,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('List of animations'),
+        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [
@@ -110,36 +112,43 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
           ),
           // List of items with Play and Delete buttons
           Expanded(
-            child: ListView.separated(
-              itemCount: items.length,
-              separatorBuilder: (context, index) => const Divider(),  // Divider between items
-              itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Card(  // Moved Card to the correct position
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: ListTile(
-                    title: Text(items[index]),
-                    leading: IconButton(
-                      icon: const Icon(Icons.play_arrow),
-                      onPressed: () {
-                        _playItem(items[index]);
-                      },
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        _deleteItem(index);
-                      },
-                    ),
+            child: items.isNotEmpty
+              ? ListView.separated(
+                  itemCount: items.length,
+                  separatorBuilder: (context, index) => const Divider(),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          title: Text(items[index]),
+                          leading: IconButton(
+                            icon: const Icon(Icons.play_arrow),
+                            onPressed: () {
+                              _playItem(items[index]);
+                            },
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              _deleteItem(items[index]);
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : const Center(
+                  child: Text(
+                    'No animations available.',
+                    style: TextStyle(fontSize: 18),
                   ),
                 ),
-              );
-              },
-            ),
           ),
         ],
       ),
@@ -185,7 +194,7 @@ class _SecondViewState extends State<SecondView> {
     // Placeholder function for sending the file
     print('File name: ${_fileBytes!.length} bytes');
 
-
+    controller.sendAnimation(_fileBytes!, _textController.text, "upper_esp");
   }
 
   @override
@@ -203,7 +212,7 @@ class _SecondViewState extends State<SecondView> {
           children: [
             ElevatedButton(
               onPressed: _pickFile,
-              child: const Text('Pick a .dat file'),
+              child: const Text('Pick a file'),
             ),
             if (_fileName != null) ...[
               const SizedBox(height: 20),
