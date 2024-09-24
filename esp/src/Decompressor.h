@@ -39,6 +39,7 @@ public:
             for(int j = 0; j < 400; j++){
                 colors_buff[j] = getColor(bytes_buff[j]);
             }
+            std::memcpy(output + total_size, colors_buff, decompressed_size);
             offset += size;
             total_size += decompressed_size;
         }
