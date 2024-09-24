@@ -23,7 +23,7 @@ class _PreConnectionViewState extends State<PreConnectionView> {
 
   @override
   void initState() {
-    _controller = MQTTController('esp32/alive_status');
+    _controller = MQTTController('external');
     _internetController = InternetController();
 
     _controller.connectionStatus.listen((event) {
@@ -144,8 +144,8 @@ class _PreConnectionViewState extends State<PreConnectionView> {
             return Center(
               child: Column(
                 children: [
-                  Text('Connected to ESP32'),
-                  SizedBox(height: 20),
+                  const Text('Connected to ESP32'),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                       onPressed: () {
                         Navigator.push(
