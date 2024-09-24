@@ -159,8 +159,7 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
         case check_alive:
             {
                 Debug::raw("Frame type: check_alive\n");
-                //mqtt->publishInteger("external", alive_status, 1);
-                // mqtt->publishInteger("external", buffer_size, sizeof(CRGB) * ALL_LEDS * SEC_IN_BUFFER * FRAMES_PER_SEC);
+                mqtt->publishInteger("external", alive_status, 1);
 
                 break;
             }
@@ -203,19 +202,19 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                 Debug::raw("Frame type: animation_get\n");
                 // Add logic for handling animation_get here
                 size_t namesLen = 100;
-                char* pld = (char*)malloc(sizeof(char) * namesLen);
+                char* pld = (char*)malloc(sizeof(char) * namesLen + sizeof(Frame));
                 char* names = pld + sizeof(Frame);
                 if(!animDB->getAllAnimationNames(names, namesLen)){
                     Debug::error("Failed reading animation names\n");
                 }
                 Frame namesFrame;
                 namesFrame.type = animation_names;
-                namesFrame.content_length = strlen(names);
-                Debug::info(names);
+                namesFrame.content_length = strlen(names) + 1;
+                Debug::info(String(namesFrame.content_length));
                                                            
-                memcpy(pld, &namesFrame, sizeof(namesFrame));         
+                memcpy(pld, &namesFrame, sizeof(namesFrame));
             
-                mqtt->publish("external", pld);
+                mqtt->publish("external", (byte*)pld, namesFrame.content_length + sizeof(Frame));
                 free(pld);
                 break;
             }
