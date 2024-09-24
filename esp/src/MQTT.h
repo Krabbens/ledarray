@@ -131,6 +131,24 @@ const byte* findAnimation(const byte* data, size_t len) {
     return data + nameLen + 1;
 }
 
+void sendAnimationNames(){
+    size_t namesLen = 100;
+    char* pld = (char*)malloc(sizeof(char) * namesLen + sizeof(Frame));
+    char* names = pld + sizeof(Frame);
+    if(!animDB->getAllAnimationNames(names, namesLen)){
+        Debug::error("Failed reading animation names\n");
+    }
+    Frame namesFrame;
+    namesFrame.type = animation_names;
+    namesFrame.content_length = strlen(names) + 1;
+    Debug::info(String(namesFrame.content_length));
+                                                
+    memcpy(pld, &namesFrame, sizeof(namesFrame));
+
+    mqtt->publish("external", (byte*)pld, namesFrame.content_length + sizeof(Frame));
+    free(pld);
+}
+
 void MQTT::callback(char* topic, byte* payload, unsigned int length) {
     Debug::raw("MQTT: Message arrived [");
     Debug::raw(topic);
@@ -179,14 +197,12 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             {
                 Debug::raw("Frame type: animation_add\n");
                 const char* name = (char*)(payload + sizeof(Frame));
-                for(int i=0; i < 40; i++){
-                    Debug::raw("<" +  String(static_cast<int>(payload[i])) + ">");
-                }
                 const byte* animation = findAnimation((byte*)name, payloadLength);
                 size_t animationLength = payloadLength - (animation - (byte*)name);
                 if(!animDB->addAnimation(name, animation, animationLength)){
                     Debug::error("Failed adding animation\n");
                 }
+                sendAnimationNames();
                 break;
             }
         case animation_remove:
@@ -197,27 +213,13 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                 if(!animDB->removeAnimation(name)){
                     Debug::error("Failed removing animation\n");
                 }
+                sendAnimationNames();
                 break;
             }
         case animation_get:
             { 
                 Debug::raw("Frame type: animation_get\n");
-                // Add logic for handling animation_get here
-                size_t namesLen = 100;
-                char* pld = (char*)malloc(sizeof(char) * namesLen + sizeof(Frame));
-                char* names = pld + sizeof(Frame);
-                if(!animDB->getAllAnimationNames(names, namesLen)){
-                    Debug::error("Failed reading animation names\n");
-                }
-                Frame namesFrame;
-                namesFrame.type = animation_names;
-                namesFrame.content_length = strlen(names) + 1;
-                Debug::info(String(namesFrame.content_length));
-                                                           
-                memcpy(pld, &namesFrame, sizeof(namesFrame));
-            
-                mqtt->publish("external", (byte*)pld, namesFrame.content_length + sizeof(Frame));
-                free(pld);
+                sendAnimationNames();
                 break;
             }
 
