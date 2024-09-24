@@ -18,11 +18,13 @@ class ListOfAnimations extends StatefulWidget {
 }
 
 class _ListOfAnimationsState extends State<ListOfAnimations> {
-
   final MQTTController controller;
   _ListOfAnimationsState({required this.controller});
 
   List<String> items = []; // List of items
+
+  int takenMemory = 1;
+  int totalMemory = 1;
 
   @override
   void initState() {
@@ -42,20 +44,28 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
       if (event != ConnectivityStatus.connected) {
         print('ESP is disconnected');
 
-        Navigator.pushNamedAndRemoveUntil( context, '/pre-connection', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/pre-connection', (route) => false);
       }
     });
 
-    controller.fileNamesStream.listen((fileNames){
+    controller.fileNamesStream.listen((fileNames) {
       setState(() {
         items = fileNames;
+      });
+    });
+
+    controller.sizeInfoStream.listen((sizeInfo) {
+      setState(() {
+        takenMemory = sizeInfo.usedBytes;
+        totalMemory = sizeInfo.totalBytes;
       });
     });
   }
 
   void _deleteItem(String item) {
     //setState(() {
-      //items.removeAt(index); // Remove item from the list
+    //items.removeAt(index); // Remove item from the list
     //});
     print('Deleting $item');
 
@@ -71,6 +81,9 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate the progress based on takenMemory and totalMemory
+    double memoryUsage = takenMemory / totalMemory;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('List of animations'),
@@ -78,10 +91,27 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
       ),
       body: Column(
         children: [
+          // Memory Usage Bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),  // Add some padding to the top row
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Memory Usage: $takenMemory B / $totalMemory B'),
+                SizedBox(height: 10),
+                LinearProgressIndicator(
+                  value: memoryUsage,
+                  minHeight: 20,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Add some padding to the top row
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,  // Spread buttons across the row
+              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Spread buttons across the row
               children: [
                 // Settings Button (top-left)
                 IconButton(
@@ -113,50 +143,49 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
           // List of items with Play and Delete buttons
           Expanded(
             child: items.isNotEmpty
-              ? ListView.separated(
-                  itemCount: items.length,
-                  separatorBuilder: (context, index) => const Divider(),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: ListTile(
-                          title: Text(items[index]),
-                          leading: IconButton(
-                            icon: const Icon(Icons.play_arrow),
-                            onPressed: () {
-                              _playItem(items[index]);
-                            },
+                ? ListView.separated(
+                    itemCount: items.length,
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Card(
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _deleteItem(items[index]);
-                            },
+                          child: ListTile(
+                            title: Text(items[index]),
+                            leading: IconButton(
+                              icon: const Icon(Icons.play_arrow),
+                              onPressed: () {
+                                _playItem(items[index]);
+                              },
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                _deleteItem(items[index]);
+                              },
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                )
-              : const Center(
-                  child: Text(
-                    'No animations available.',
-                    style: TextStyle(fontSize: 18),
+                      );
+                    },
+                  )
+                : const Center(
+                    child: Text(
+                      'No animations available.',
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
-                ),
           ),
         ],
       ),
     );
   }
-
-
 }
+
 
 class SecondView extends StatefulWidget {
   final MQTTController controller;

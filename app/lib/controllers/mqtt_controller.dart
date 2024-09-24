@@ -38,6 +38,10 @@ class MQTTController {
   Stream<List<String>> get fileNamesStream => _fileNamesController.stream;
   List<String> _fileNames = [];
 
+  final StreamController<SizeInfo> _sizeInfoController = StreamController<SizeInfo>.broadcast();
+  Stream<SizeInfo> get sizeInfoStream => _sizeInfoController.stream;
+  SizeInfo _sizeInfo = SizeInfo(totalBytes: 1, usedBytes: 1);
+
   int _lastRecvMessage = -1;
 
   late Timer? _timer;
@@ -148,6 +152,12 @@ class MQTTController {
       List<String> result = resultString.split(',');
       _fileNames = result;
       _fileNamesController.add(_fileNames);
+      print(result);
+    }
+    else if (frame.type == FrameType.infoSize){
+      SizeInfo result = SizeInfo.fromBytes(buffer);
+      _sizeInfo = result;
+      _sizeInfoController.add(_sizeInfo);
       print(result);
     }
     _messagesController.add(payload);
