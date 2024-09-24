@@ -143,16 +143,19 @@ class _PreConnectionViewState extends State<PreConnectionView> {
           if (_espStatus == ConnectivityStatus.connected) {
             return Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text('Connected to ESP32'),
-                  const SizedBox(height: 20),
+                  Text('Connected to ESP32'),
+                  SizedBox(height: 20),
                   ElevatedButton(
                       onPressed: () {
+
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ListOfAnimations(controller: _controller)), // Navigate to ListOfAnimations
-                          //ListOfAnimations(controller: _controller)),
-                        );
+                          MaterialPageRoute(builder: (context) => ListOfAnimations(controller: _controller), 
+                        ));
+                        
                       },
                       child: const Text('Continue'),
                     ),

@@ -13,6 +13,8 @@ enum FrameType {
   animationPlay,
   animationClear,
   animationNames,
+  getSize,
+  infoSize,
 }
 
 class Frame {
@@ -36,5 +38,29 @@ class Frame {
     FrameType type = FrameType.values[buffer.getInt32(0, Endian.little)];
     int contentLength = buffer.getInt32(4, Endian.little);
     return Frame(type, contentLength);
+  }
+}
+
+class SizeInfo {
+  int totalBytes;
+  int usedBytes;
+
+  SizeInfo({required this.totalBytes, required this.usedBytes});
+
+  Uint8Buffer toBytes() {
+    final byteData = ByteData(8); // 2 x int32 (4 bytes each)
+    byteData.setInt32(0, totalBytes, Endian.little);
+    byteData.setInt32(4, usedBytes, Endian.little);
+    Uint8Buffer buffer = Uint8Buffer();
+    buffer.addAll(byteData.buffer.asUint8List());
+    return buffer;
+  }
+
+  static SizeInfo fromBytes(Uint8Buffer bytes) {
+    Uint8List byteList = Uint8List.fromList(bytes);
+    final buffer = ByteData.sublistView(byteList);
+    int totalBytes = buffer.getInt32(0, Endian.little);
+    int usedBytes = buffer.getInt32(4, Endian.little);
+    return SizeInfo(totalBytes: totalBytes, usedBytes: usedBytes);
   }
 }
