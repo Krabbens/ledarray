@@ -49,6 +49,7 @@ public:
     void publish(const char* topic, const char* payload);
     void publish(const char* topic, byte* payload, unsigned int len);
     void publishInteger(const char* topic, FrameType type, int value);
+    void publishSizeInfo(const char* topic, FrameType type, SizeInfo sizeInfo);
     void subscribe(const char* topic);
     void loop() {
         client.loop();
@@ -112,6 +113,16 @@ void MQTT::publishInteger(const char* topic, FrameType type, int value){
     publish(topic, buffer, sizeof(buffer));
 }
 
+void MQTT::publishSizeInfo(const char* topic, FrameType type, SizeInfo sizeInfo){
+    Frame frame;
+    frame.type = type;
+    frame.content_length = sizeof(SizeInfo);          
+    byte buffer[sizeof(frame) + sizeof(SizeInfo)];
+    memcpy(buffer, &frame, sizeof(frame));
+    memcpy(buffer + sizeof(frame), &sizeInfo, sizeof(SizeInfo));
+    publish(topic, buffer, sizeof(buffer));
+}
+
 void MQTT::subscribe(const char* topic) {
     if (client.connected()) {
         client.subscribe(topic);
@@ -147,6 +158,9 @@ void sendAnimationNames(){
 
     mqtt->publish("external", (byte*)pld, namesFrame.content_length + sizeof(Frame));
     free(pld);
+
+    SizeInfo sizeInfo = animDB->getSizeInfo();
+    mqtt->publishSizeInfo("external", info_size, sizeInfo);
 }
 
 void MQTT::callback(char* topic, byte* payload, unsigned int length) {
@@ -249,6 +263,13 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                 Debug::raw("Frame type: animation_clear\n");
             
                 animDB->clear();
+
+                break;
+            }
+        case get_size:
+            {
+                SizeInfo sizeInfo = animDB->getSizeInfo();
+                mqtt->publishSizeInfo("external", info_size, sizeInfo);
 
                 break;
             }

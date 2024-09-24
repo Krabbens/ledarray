@@ -13,12 +13,20 @@ enum FrameType{
     animation_play = 8,
     animation_clear = 9,
     animation_names = 10,
+    get_size = 11,
+    info_size = 12,
 };
 
 struct Frame
 {
     FrameType type; // 0 = animation
     uint32_t content_length; // content length in bytes
+};
+
+struct SizeInfo
+{
+    size_t totalBytes;
+    size_t usedBytes;
 };
 
 struct AnimationFrame
