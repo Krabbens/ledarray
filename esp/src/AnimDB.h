@@ -41,6 +41,8 @@ public:
     boolean removeAnimation(const char* name);
     boolean getAllAnimationNames(char* buffer, size_t bufferLength);
 
+    SizeInfo getSizeInfo();
+
 private:
     Preferences preferences;
     boolean flag = true;
@@ -410,4 +412,11 @@ boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
 
     buffer[totalLength] = '\0'; 
     return true;
+}
+
+SizeInfo AnimDB::getSizeInfo(){
+    SizeInfo sizeInfo;
+    sizeInfo.totalBytes = SPIFFS.totalBytes();
+    sizeInfo.usedBytes = SPIFFS.usedBytes();
+    return sizeInfo;
 }
