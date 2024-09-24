@@ -34,6 +34,10 @@ class MQTTController {
 
   ConnectivityStatus _isConnected = ConnectivityStatus.disconnected;
 
+  final StreamController<List<String>> _fileNamesController = StreamController<List<String>>.broadcast();
+  Stream<List<String>> get fileNamesStream => _fileNamesController.stream;
+  List<String> _fileNames = [];
+
   int _lastRecvMessage = -1;
 
   late Timer? _timer;
@@ -139,6 +143,8 @@ class MQTTController {
     else if (frame.type == FrameType.animationNames){
       final resultString = MqttPublishPayload.bytesToStringAsString(buffer);
       List<String> result = resultString.split(',');
+      _fileNames = result;
+      _fileNamesController.add(_fileNames);
       print(result);
     }
     _messagesController.add(payload);
@@ -148,6 +154,7 @@ class MQTTController {
     _timer!.cancel();
     _messagesController.close();
     _connectionStatusController.close();
+    _fileNamesController.close();
     client.disconnect();
   }
 
