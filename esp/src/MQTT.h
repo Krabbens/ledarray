@@ -273,6 +273,11 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
 
                 break;
             }
+        case animation_stop:
+            {
+                delete ledArray;
+                ledArray = NULL;
+            }
         default:
             Debug::raw("Unknown Frame type\n");
             break;

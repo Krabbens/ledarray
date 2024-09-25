@@ -15,6 +15,7 @@ enum FrameType{
     animation_names = 10,
     get_size = 11,
     info_size = 12,
+    animation_stop = 13,
 };
 
 struct Frame
