@@ -69,8 +69,8 @@ LedArray::LedArray(uint8_t *file, size_t fileSize)
 
     buffer_ptr = leds_bb;
 
-    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB, DATA_RATE_MHZ(24), 0>(buffer_ptr, NUM_LEDS);
-    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB, DATA_RATE_MHZ(24), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
+    controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB, DATA_RATE_MHZ(10), 0>(buffer_ptr, NUM_LEDS);
+    controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB, DATA_RATE_MHZ(10), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
 
     FastLED.setBrightness(10);
 
@@ -110,7 +110,6 @@ void LedArray::nextFrame()
 {
     if (led_index == 0)
     {
-        doneProcessing = false;
         startDecompTask();
     }
     controllers[0]->setLeds(buffer_ptr, NUM_LEDS);
