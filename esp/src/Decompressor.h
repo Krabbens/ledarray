@@ -28,22 +28,32 @@ public:
         uint16_t size;
         size_t total_size = 0;
         while(total_size < outputCapacity){
-            if(offset + sizeof(size) > inputSize) offset = 0;
+
+            if (offset + sizeof(size) > inputSize) {
+                offset = 0;
+            }
+
             std::memcpy(&size, (input + offset), sizeof(size));
             offset+=sizeof(size);
+
+            if (offset + size > inputSize) {
+                Debug::error("ERROR: cannot properly loop animation");
+                return;
+            }
+
             int decompressed_size = LZ4_decompress_safe((char*)(input + offset), (char*)(bytes_buff), size, BLOCK_SIZE);
+            
             if (decompressed_size != BLOCK_SIZE) {
                 Debug::error("ERROR: "+ String(decompressed_size));
                 return;
             }
-            for(int j = 0; j < 400; j++){
+            for(int j = 0; j < BLOCK_SIZE; j++){
                 output[j + total_size] = getColor(bytes_buff[j]);
             }
             offset += size;
             total_size += decompressed_size;
         }
-
-        Debug::info("Decompressed {" + String(micros() - start) + " us}");
+        Debug::info("FINAL OFFSET: "+ String(offset) + " / " + String(inputSize));
     }
 
 private:
