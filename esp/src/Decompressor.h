@@ -22,43 +22,52 @@ public:
 
     inline static void decompress(const uint8_t *input, CRGB *output, size_t inputSize, size_t outputCapacity, size_t& offset)
     {
-        
         int start = micros();
-
         uint16_t size;
         size_t total_size = 0;
+
         while(total_size < outputCapacity){
 
             if (offset + sizeof(size) > inputSize) {
                 offset = 0;
+                //Debug::info("LOOP: reseting offset, frames: " + String(frame_count) + "");
+                continue;
             }
 
             std::memcpy(&size, (input + offset), sizeof(size));
-            offset+=sizeof(size);
+            offset += sizeof(size);
 
             if (offset + size > inputSize) {
-                Debug::error("ERROR: cannot properly loop animation");
+                Debug::error("ERROR: Not enought data to decode. Offset: " + String(offset) + " Size: " + String(size));
                 return;
             }
 
             int decompressed_size = LZ4_decompress_safe((char*)(input + offset), (char*)(bytes_buff), size, BLOCK_SIZE);
             
             if (decompressed_size != BLOCK_SIZE) {
-                Debug::error("ERROR: "+ String(decompressed_size));
+                Debug::error("ERROR: Compression error! Offset: " + String(offset) + " Dekompresja: "+ String(decompressed_size) + " / " + String(size));
                 return;
             }
-            for(int j = 0; j < BLOCK_SIZE; j++){
+
+            if (total_size + decompressed_size > outputCapacity) {
+                Debug::error("ERROR: Output buffer overload. Total size: " + String(total_size));
+                return;
+            }
+
+            for(int j = 0; j < BLOCK_SIZE; ++j){
                 output[j + total_size] = getColor(bytes_buff[j]);
             }
             offset += size;
             total_size += decompressed_size;
+            ++frame_count;
         }
-        Debug::info("FINAL OFFSET: "+ String(offset) + " / " + String(inputSize));
+        Debug::info("FINAL OFFSET: "+ String(offset) + " / " + String(inputSize) + " Total size: " + String(total_size) + " Frames: " + String(frame_count));
     }
 
 private:
-    inline static uint8_t bytes_buff[400];
-    inline static CRGB colors_buff[400];
+    inline static uint8_t bytes_buff[BLOCK_SIZE];
+    inline static CRGB colors_buff[BLOCK_SIZE];
+    inline static int frame_count = 0;
 };
 
 unsigned int Decompressor::palette[256][3] = {
