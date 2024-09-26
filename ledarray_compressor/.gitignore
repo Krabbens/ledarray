@@ -6,7 +6,6 @@
 *.userosscache
 *.sln.docstates
 
-# Pliki binarne i tymczasowe
 *.exe
 *.dll
 *.obj
@@ -27,7 +26,6 @@
 *.sdf
 *.opendb
 
-# Foldery tymczasowe i build
 Debug/
 Release/
 x64/
@@ -35,20 +33,17 @@ x86/
 [Aa][Rr][Mm]/
 build/
 
-# Pliki konfiguracyjne Visual Studio
 *.opensdf
 *.vcxproj.*
 *.filters
 *.VC.db
 *.VC.opendb
 
-# Pliki generowane przez CMake
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 CMakeLists.txt.user
 
-# Inne pliki i foldery
 *.ncb
 *.aps
 *.obj
