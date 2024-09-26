@@ -41,7 +41,46 @@ std::vector<char> merge_bmp_files(const std::string& folder_path, int spins) {
         }
     }
 
+    if (debug) {
+        int pixel_count = 0; 
+        for (int i = 0; i < 20; ++i) {
+            for (int j = 0; j < 20; ++j) {
+                int index = (i * 20 + j) * 3; 
+                if (index + 2 < merged_data.size()) {
+                    unsigned char blue = static_cast<unsigned char>(merged_data[index]);
+                    unsigned char green = static_cast<unsigned char>(merged_data[index + 1]);
+                    unsigned char red = static_cast<unsigned char>(merged_data[index + 2]);
+                    std::cout << "(" << std::setw(3) << (int)red << ", "
+                        << std::setw(3) << (int)green << ", "
+                        << std::setw(3) << (int)blue << ") ";
+                }
+                else {
+                    std::cout << "(---, ---, ---) ";
+                }
+                pixel_count++;
+            }
+            std::cout << std::endl;
+        }
+    }
+
     return merged_data;
+}
+
+std::vector<char> rotate(std::vector<char> vec) {
+
+    std::vector<char> rotated(vec.size());
+    for (int frame_i = 0; frame_i * 400 < vec.size(); frame_i++) {
+        int frame_n = frame_i * 400;
+        for (int row_i = 0; row_i < 20; row_i++) {
+            int row_n = row_i * 20;
+            for (int column_i = 0; column_i < 20; column_i++) {
+                int row_r = column_i * 20;
+                int column_r = 20 - row_i;
+                rotated[frame_n + row_n + column_i] = vec[frame_n + row_r + column_r];
+            }
+        }
+    }
+    return rotated;
 }
 
 void lz4Compress(const char* input, std::ofstream& outputFile) {
@@ -89,6 +128,7 @@ void compressFile(const char* inputFilename, const char* outputFilename, int spi
 
     std::cout << "Compressing... 1/2" << std::endl;
     std::vector<char> colorsVec = ColorCompressor::convertColorsToIndices(inputVec);
+    inputVec.clear();
 
     if (debug) {
         std::ofstream colorCompressedFile(std::string(outputFilename) + "_color_compressed.raw", std::ios::binary);
@@ -100,8 +140,12 @@ void compressFile(const char* inputFilename, const char* outputFilename, int spi
         colorCompressedFile.close();
     }
 
-    size_t totalBytes = colorsVec.size();
-    char* input = colorsVec.data();
+    std::cout << "Rotating... " << std::endl;
+    std::vector<char> rotated = rotate(colorsVec);
+    colorsVec.clear();
+
+    size_t totalBytes = rotated.size();
+    char* input = rotated.data();
     size_t offset = 0;
 
     std::ofstream outputFile(outputFilename, std::ios::binary);
