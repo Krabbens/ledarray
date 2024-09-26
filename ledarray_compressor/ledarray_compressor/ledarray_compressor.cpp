@@ -67,19 +67,26 @@ std::vector<char> merge_bmp_files(const std::string& folder_path, int spins) {
 }
 
 std::vector<char> rotate(std::vector<char> vec) {
+    const int block_size = 20;
+    const int frame_size = block_size * block_size;
 
     std::vector<char> rotated(vec.size());
-    for (int frame_i = 0; frame_i * 400 < vec.size(); frame_i++) {
-        int frame_n = frame_i * 400;
-        for (int row_i = 0; row_i < 20; row_i++) {
-            int row_n = row_i * 20;
-            for (int column_i = 0; column_i < 20; column_i++) {
-                int row_r = column_i * 20;
-                int column_r = 20 - row_i;
-                rotated[frame_n + row_n + column_i] = vec[frame_n + row_r + column_r];
+
+    for (int frame_i = 0; frame_i * frame_size < vec.size(); frame_i++) {
+        int frame_n = frame_i * frame_size;
+
+        for (int row_i = 0; row_i < block_size; row_i++) {
+            for (int column_i = 0; column_i < block_size; column_i++) {
+                // Calculate rotated positions
+                int new_row = block_size - 1 - column_i;  // Flip the row to correct the upside-down issue
+                int new_column = row_i;
+
+                // Map the original index to the rotated index
+                rotated[frame_n + new_row * block_size + new_column] = vec[frame_n + row_i * block_size + column_i];
             }
         }
     }
+
     return rotated;
 }
 
