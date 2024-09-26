@@ -28,9 +28,11 @@ CRGB *leds_bb_test;
 
 void mqttLoop(void *parameter)
 {
+    Debug::info("Mqtt loop started...");
     while (true)
     {
         mqtt->loop();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
@@ -63,71 +65,41 @@ void setup()
     mqtt->connectToBroker();
     mqtt->subscribe("upper_esp");
 
-    // leds_fb_test = (CRGB *)malloc(sizeof(CRGB) * 400 * 900);
-
-    // ledArray = new LedArray(bufferCallback);
-
-    // for (int i = 0; i < 900; i++)
-    // {
-    //     for (int j = 0; j < 400; j++)
-    //     {
-    //         leds_fb_test[i * 400 + j] = CRGB::Black;
-    //     }
-    // }
-
-    // for (int i = 0; i < 900; i++)
-    // {
-    //     leds_fb_test[i * 400 + i % 400] = CRGB::Red;
-    // }
-
-    // ledArray->fillBuffer(leds_fb_test);
-    // ledArray->swapBuffer();
-    // ledArray->fillBuffer(leds_fb_test);
-    // ledArray->swapBuffer();
-
-    // ledArray->fillBuffer(leds_fb_test);
-    // ledArray->swapBuffer();
-    // ledArray->fillBuffer(leds_bb_test);
-    // ledArray->swapBuffer();
-
-    // xTaskCreatePinnedToCore(
-    //     mqttLoop,
-    //     "mqttLoop",
-    //     409600,
-    //     NULL,
-    //     1,
-    //     NULL,
-    //     0
-    // );
+    xTaskCreatePinnedToCore(
+        mqttLoop,
+        "mqttLoop",
+        4096,
+        NULL,
+        2,
+        NULL,
+        0
+    );
 }
-
-// void mqttLoop(void *parameter)
-// {
-//   while (true)
-//   {
-//     mqtt->loop();
-//   }
-// }
 
 int avgTime = 0;
 int count = 0;
+uint32_t maxTimeX = 0;
 uint32_t debugTime = 0;
+uint32_t timeX;
 
 void loop()
 {
-    mqtt->loop();
+    if(debugTime == 0) lastMicros = micros();
     if (ledArray != NULL && ledArray->isReady())
     {
-        lastMicros = micros();
         ledArray->nextFrame();
         debugTime = micros();
+        timeX = debugTime - lastMicros;
+        lastMicros = debugTime;
         count++;
-        avgTime += debugTime - lastMicros;
+        avgTime += timeX;
+        if(maxTimeX < timeX) maxTimeX = timeX;
         if (count == 1000)
         {
-            Debug::info("Average time: " + String(avgTime / count));
+            Debug::info("Average time: " + String(avgTime / count) + " Max time: " + String(maxTimeX));
             avgTime = 0;
             count = 0;
+            maxTimeX = 0;
         }
     }
 }
