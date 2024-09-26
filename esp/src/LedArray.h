@@ -89,7 +89,7 @@ void LedArray::startDecompTask()
         "decompTask",
         4096*8,
         this,
-        1,
+        4,
         &xDecompTaskHandle,
         0);
 }
