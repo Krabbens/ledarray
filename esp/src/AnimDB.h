@@ -47,6 +47,8 @@ private:
     Preferences preferences;
     boolean flag = true;
     Animation* animArr;
+    char* names = NULL;
+    size_t namesLen = 0;
 
     String tempName;
     char tempKey[MAX_KEY_SIZE + ID_MAX_DIGITS];
@@ -68,6 +70,8 @@ private:
 
     unsigned short prepareAnimArr(boolean extraSpace = false);
     bool saveAnimArr(unsigned short animNum);
+    void setNames(char* buffer, size_t len);
+    void resetNames();
 };
 
 AnimDB::AnimDB(){
@@ -132,11 +136,13 @@ void AnimDB::print(){
 }
 
 void AnimDB::clear(){
+    resetNames();
     preferences.clear();
     FileManager::removeAllFiles();
 }
 
  boolean AnimDB::addAnimation(const char* name, const byte* data, size_t length){
+    resetNames();
     unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
         unsigned short id = 0;
@@ -324,6 +330,7 @@ boolean AnimDB::getAnimation(const char* name, byte* buff, size_t length){
 }
 
 boolean AnimDB::removeAnimation(const char* name){
+    resetNames();
     unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
         Debug::info("AnimDB is empty\n");
@@ -381,6 +388,14 @@ boolean AnimDB::removeAnimationName(unsigned short id){
 }
 
 boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
+
+    if(namesLen){
+        memcpy(buffer, names, namesLen);
+        return true;
+    }
+
+    resetNames();
+
     unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
         Debug::info("AnimDB is empty\n");
@@ -410,7 +425,10 @@ boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
         }
     }
 
-    buffer[totalLength] = '\0'; 
+    buffer[totalLength] = '\0';
+
+    setNames(buffer, totalLength);
+
     return true;
 }
 
@@ -419,4 +437,16 @@ SizeInfo AnimDB::getSizeInfo(){
     sizeInfo.totalBytes = SPIFFS.totalBytes();
     sizeInfo.usedBytes = SPIFFS.usedBytes();
     return sizeInfo;
+}
+
+void AnimDB::setNames(char* buffer, size_t len){
+    names = (char*)malloc(len);
+    memcpy(names, buffer, len);
+    namesLen = len;
+}
+
+void AnimDB::resetNames(){
+    if(names != NULL) free(names);
+    names = NULL;
+    namesLen = 0;
 }
