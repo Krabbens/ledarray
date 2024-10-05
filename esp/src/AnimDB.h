@@ -398,8 +398,8 @@ boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
 
     unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
-        Debug::info("AnimDB is empty\n");
-        return false;
+        buffer[0] = '\0';
+        return;
     }
     
     size_t totalLength = 0;
@@ -425,7 +425,7 @@ boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
         }
     }
 
-    buffer[totalLength] = '\0';
+    buffer[totalLength++] = '\0';
 
     setNames(buffer, totalLength);
 
@@ -443,6 +443,7 @@ void AnimDB::setNames(char* buffer, size_t len){
     names = (char*)malloc(len);
     memcpy(names, buffer, len);
     namesLen = len;
+    Debug::info("NAMES LEN: " + String(len));
 }
 
 void AnimDB::resetNames(){
