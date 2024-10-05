@@ -149,10 +149,15 @@ class MQTTController {
     }
     else if (frame.type == FrameType.animationNames){
       final resultString = MqttPublishPayload.bytesToStringAsString(buffer);
-      List<String> result = resultString.split(',');
+      List<String> result;
+      if(resultString.length <= 1){
+        result = List<String>.empty();
+      }
+      else{
+        result = resultString.split(',');
+      }
       _fileNames = result;
       _fileNamesController.add(_fileNames);
-      print(result);
     }
     else if (frame.type == FrameType.infoSize){
       SizeInfo result = SizeInfo.fromBytes(buffer);
