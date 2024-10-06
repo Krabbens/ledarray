@@ -45,7 +45,7 @@ public:
             int decompressed_size = LZ4_decompress_safe((char*)(input + offset), (char*)(bytes_buff), size, BLOCK_SIZE);
             
             if (decompressed_size != BLOCK_SIZE) {
-                Debug::error("ERROR: Compression error! Offset: " + String(offset) + " Dekompresja: "+ String(decompressed_size) + " / " + String(size));
+                Debug::error("ERROR: Compression error! Offset: " + String(offset) + " Decompressed: "+ String(decompressed_size) + " / " + String(size));
                 return;
             }
 
@@ -61,7 +61,7 @@ public:
             total_size += decompressed_size;
             ++frame_count;
         }
-        Debug::info("FINAL OFFSET: "+ String(offset) + " / " + String(inputSize) + " Total size: " + String(total_size) + " Frames: " + String(frame_count));
+        //Debug::info("FINAL OFFSET: "+ String(offset) + " / " + String(inputSize) + " Total size: " + String(total_size) + " Frames: " + String(frame_count));
     }
 
 private:
