@@ -399,7 +399,7 @@ boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
     unsigned short animNum = prepareAnimArr(true);
     if(animNum == 0){
         buffer[0] = '\0';
-        return;
+        return true;
     }
     
     size_t totalLength = 0;
