@@ -27,7 +27,9 @@ uint32_t lastMicros = micros();
 CRGB *leds_fb_test;
 CRGB *leds_bb_test;
 
-State currentState;
+State previousState = State::INIT;
+State currentState = State::INIT;
+State nextState = State::NONE;
 
 TaskHandle_t* mqttLoopHandle = NULL;
 
@@ -65,6 +67,10 @@ void prepareMqtt(){
     );
 }
 
+void resetNextState(){
+    nextState = State::STOP_ANIMATION;
+}
+
 void setup()
 {
     Debug::init();
@@ -77,8 +83,6 @@ void setup()
     animDB->print();
 
     mqtt = new MQTT(wifiClient);
-    
-    currentState = INIT;
 }
 
 int avgTime = 0;
@@ -87,7 +91,7 @@ uint32_t maxTimeX = 0;
 uint32_t debugTime = 0;
 uint32_t timeX;
 
-State previousState = INIT;
+State previousState = State::INIT;
 
 void loop()
 {
@@ -99,10 +103,10 @@ void loop()
             
             if (wireless->isConnected()) {
                 Debug::info("WiFi already connected. Switching to READY state.");
-                currentState = READY;
+                currentState = State::READY;
             } else {
                 Debug::info("WiFi not connected. Switching to CONNECT_WIFI state.");
-                currentState = CONNECT_WIFI;
+                currentState = State::CONNECT_WIFI;
             }
             break;
         }
@@ -116,10 +120,10 @@ void loop()
             if (wireless->isConnected()) {
                 Debug::info("Successfully connected to WiFi. Switching to READY state.");
                 prepareMqtt();
-                currentState = READY;
+                currentState = State::READY;
             } else {
                 Debug::info("WiFi connection failed. Switching to SETUP_WIFI state.");
-                currentState = SETUP_WIFI;
+                currentState = State::SETUP_WIFI;
             }
             break;
         }
@@ -133,7 +137,7 @@ void loop()
             if (wireless->isConnected()) {
                 Debug::info("Successfully connected to WiFi after AP setup. Switching to READY state.");
                 wireless->stopAP();
-                currentState = READY;
+                currentState = State::READY;
             } else {
                 Debug::info("Waiting for WiFi credentials from AP.");
             }
@@ -144,9 +148,10 @@ void loop()
         {
             Debug::info("System is ready. Waiting for LED animation to start...");
             
-            if (ledArray != NULL && ledArray->isReady()) {
+            if (nextState == State::ANIMATION) {
                 Debug::info("LED animation ready to display. Switching to ANIMATION state.");
-                currentState = ANIMATION;
+                currentState = State::ANIMATION;
+                resetNextState();
             }
             break;
         }
@@ -171,6 +176,21 @@ void loop()
                     maxTimeX = 0;
                 }
             }
+            if (nextState == STOP_ANIMATION){
+                currentState = State::STOP_ANIMATION;
+                resetNextState();
+            }
+            break;
+        }
+
+        case STOP_ANIMATION:
+        {
+            Debug::info("Stopping the animation.");
+            if(ledArray!=NULL){
+                delete ledArray;
+                ledArray = NULL;
+            }
+            currentState = State::READY;
             break;
         }
 
@@ -178,7 +198,7 @@ void loop()
         {
             Debug::error("An error occurred. Restarting WiFi setup...");
             wireless->clearCredentials();
-            currentState = CONNECT_WIFI;
+            currentState = State::CONNECT_WIFI;
             break;
         }
     }

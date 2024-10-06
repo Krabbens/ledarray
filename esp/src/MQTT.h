@@ -5,6 +5,7 @@
 #include "Frame.h"
 #include "LedArray.h"
 #include "AnimDB.h"
+#include "State.h"
 
 static const char *root_ca PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
@@ -132,6 +133,8 @@ void MQTT::subscribe(const char* topic) {
 extern MQTT* mqtt;
 extern LedArray *ledArray;
 extern AnimDB *animDB;
+extern State currentState;
+extern State nextState;
 
 const byte* findAnimation(const byte* data, size_t len) {
     size_t nameLen = strlen((const char *)data);
@@ -191,7 +194,7 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
         case check_alive:
             {
                 Debug::raw("Frame type: check_alive\n");
-                mqtt->publishInteger("external", alive_status, 1);
+                mqtt->publishInteger("external", alive_status, (int)currentState);
 
                 break;
             }
@@ -253,6 +256,7 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
                         delete ledArray;
                         ledArray = new LedArray(data, len);
                     }
+                    nextState = State::ANIMATION;
                 }
 
                 break;
@@ -279,10 +283,8 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             {
                 Debug::raw("Frame type: animation_stop\n");
 
-                if(ledArray!=NULL){
-                    delete ledArray;
-                    ledArray = NULL;
-                }
+                nextState = State::STOP_ANIMATION;
+
                 break;
             }
         default:

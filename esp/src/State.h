@@ -4,5 +4,7 @@ enum State {
     SETUP_WIFI,
     READY,
     ANIMATION,
-    ERROR
+    STOP_ANIMATION,
+    ERROR,
+    NONE,
 };
