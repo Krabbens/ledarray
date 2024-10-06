@@ -12,125 +12,128 @@ public:
     Wireless();
     ~Wireless();
 
-    void connectToNetwork();
-    void startAP();
+    void connectToNetwork();   
+    void startAP();           
+    void stopAP();             
+    bool isConnected();        
 
-    bool isConnected() {
-        return WiFi.status() == WL_CONNECTED;
-    }
+    void clearCredentials();   
     
 private:
     Preferences preferences;
     DNSServer dnsServer;
     AsyncWebServer* server;
     String msg_ssid, msg_password;
-
     bool serverRunning = false;
 
-    void clearCredentials();
+    bool attemptConnection(const String& ssid, const String& password);
+    
+    void setupWebServer();
 };
 
 Wireless::Wireless() {
     Debug::info("Wireless object created.");
     preferences.begin("wireless", false);
-
-    //clearCredentials();
-    if (preferences.isKey("ssid")) {
-        Debug::info("Last known network found.");
-        connectToNetwork();
-    }
-    else {
-        Debug::info("No last known network found.");
-        startAP();
-    }
 }
-
 
 Wireless::~Wireless() {
     Debug::info("Wireless object destroyed.");
     if (server) {
         delete server;
     }
-}
-
-void Wireless::connectToNetwork() {
-    Debug::info("Connecting to network...");
-    String ssid = preferences.getString("ssid");
-    String password = preferences.getString("password");
-    Debug::info("SSID: " + ssid);
-    Debug::info("Password: " + password);
-    WiFi.begin(preferences.getString("ssid").c_str(), preferences.getString("password").c_str());
-    int retries = 0;
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Debug::info("Connecting... try: " + String(retries));
-        retries++;
-        if (retries > 10) {
-            Debug::error("Failed to connect to network.");
-            if (serverRunning) {
-                return;
-            }
-            startAP();
-            return;
-        }
-    }
-    Debug::info("Connected to network.");
     preferences.end();
 }
 
+bool Wireless::isConnected() {
+    return WiFi.status() == WL_CONNECTED;
+}
+
+void Wireless::connectToNetwork() {
+    if (!preferences.isKey("ssid")) {
+        Debug::error("No saved WiFi credentials.");
+        return;
+    }
+
+    String ssid = preferences.getString("ssid");
+    String password = preferences.getString("password");
+
+    Debug::info("Attempting to connect to network with SSID: " + ssid);
+    bool connected = attemptConnection(ssid, password);
+
+    if (connected) {
+        Debug::info("Successfully connected to the network.");
+    } else {
+        Debug::error("Failed to connect to the network.");
+    }
+}
+
+bool Wireless::attemptConnection(const String& ssid, const String& password) {
+    WiFi.begin(ssid.c_str(), password.c_str());
+    int retries = 0;
+
+    while (WiFi.status() != WL_CONNECTED && retries < 10) {
+        delay(1000); 
+        Debug::info("Connecting... attempt: " + String(retries));
+        retries++;
+    }
+
+    return WiFi.status() == WL_CONNECTED;
+}
+
 void Wireless::startAP() {
-    Debug::info("Starting AP...");
+    Debug::info("Starting Access Point (AP) mode...");
     serverRunning = true;
     WiFi.softAP("ledarray");
+
     dnsServer.start(53, "*", WiFi.softAPIP());
+
+    setupWebServer(); 
+}
+
+void Wireless::stopAP() {
+    if (serverRunning) {
+        WiFi.softAPdisconnect(true); 
+        dnsServer.stop();            
+        Debug::info("Access Point stopped.");
+        serverRunning = false;
+    } else {
+        Debug::info("Access Point is not running.");
+    }
+}
+
+void Wireless::setupWebServer() {
     server = new AsyncWebServer(80);
-    
-    /*
-        Create listener for new network credentials.
-    */
-    server->on("/register", HTTP_GET, [&] (AsyncWebServerRequest *request) {
-        
+
+    server->on("/register", HTTP_GET, [&](AsyncWebServerRequest *request) {
         if (request->hasParam("ssid") && request->hasParam("password")) {
-            Debug::info("SSID and password provided.");
+            Debug::info("Received new SSID and password.");
             msg_ssid = request->getParam("ssid")->value();
             msg_password = request->getParam("password")->value();
-            Debug::info("SSID: " + msg_ssid);
-            Debug::info("Password: " + msg_password);
+
             preferences.putString("ssid", msg_ssid);
             preferences.putString("password", msg_password);
-            
-            connectToNetwork();
-        } else {
-            Debug::error("No ssid or password provided.");
-        }
-        int retries = 0;
-        while (WiFi.status() != WL_CONNECTED)
-        {
-            delay(1000);
-            Debug::info("Connecting...");
-            retries++;
-            if (retries > 6)
-            {
-                Debug::error("Failed to connect to network.");
-                request->send(400, "text/plain", "Disconnected.");
-                break;
+
+            bool connected = attemptConnection(msg_ssid, msg_password);
+
+            if (connected) {
+                request->send(200, "text/plain", "Connected.");
+            } else {
+                request->send(400, "text/plain", "Failed to connect.");
             }
+        } else {
+            Debug::error("Missing SSID or password.");
+            request->send(400, "text/plain", "No SSID or password provided.");
         }
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            Debug::info("Connected to network.");
-            request->send(200, "text/plain", "Connected.");
-        }
-        
     });
-    server->on("/status", HTTP_GET, [&] (AsyncWebServerRequest *request) {
-        Debug::info("ESP32 IP on the WiFi network: ");
-        Debug::info(WiFi.localIP().toString());
-        request->send(200, "text/plain", "OK");
+
+    server->on("/status", HTTP_GET, [&](AsyncWebServerRequest *request) {
+        request->send(200, "text/plain", "ESP32 IP: " + WiFi.localIP().toString());
     });
+
     server->begin();
 }
 
 void Wireless::clearCredentials() {
     preferences.clear();
+    Debug::info("Cleared stored WiFi credentials.");
 }
