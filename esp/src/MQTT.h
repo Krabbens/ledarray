@@ -268,6 +268,8 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             }
         case get_size:
             {
+                Debug::raw("Frame type: get_size\n");
+
                 SizeInfo sizeInfo = animDB->getSizeInfo();
                 mqtt->publishSizeInfo("external", info_size, sizeInfo);
 
@@ -275,8 +277,13 @@ void MQTT::callback(char* topic, byte* payload, unsigned int length) {
             }
         case animation_stop:
             {
-                delete ledArray;
-                ledArray = NULL;
+                Debug::raw("Frame type: animation_stop\n");
+
+                if(ledArray!=NULL){
+                    delete ledArray;
+                    ledArray = NULL;
+                }
+                break;
             }
         default:
             Debug::raw("Unknown Frame type\n");
