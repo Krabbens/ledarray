@@ -99,6 +99,30 @@ public:
                 return;
             }
 
+            if(frame_count == 0){
+                String outputStr;
+                int pixelCount = 0;
+
+                for (int y = 0; y < 20; ++y) {
+                    for (int x = 0; x < 20; ++x) {
+                        if (pixelCount >= outputCapacity) break;
+
+                        // Pobierz RGB dla aktualnego piksela
+                        CRGB& pixel = output[pixelCount];
+
+                        // Sformatuj wiersz wyjściowy
+                        outputStr += "(" + String(pixel.r) + "," + String(pixel.g) + "," + String(pixel.b) + ")";
+                        if (x < 19) outputStr += " "; // Spacja między pikselami
+
+                        ++pixelCount;
+                    }
+                    outputStr += "\n"; // Nowa linia po każdym wierszu 20 pikseli
+                }
+
+                // Wypisz wynik na raz
+                Serial.print(outputStr);
+            }
+
             offset += size;
             total_size += decompressed_size;
             ++frame_count;

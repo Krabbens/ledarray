@@ -68,7 +68,7 @@ void prepareMqtt(){
 }
 
 void resetNextState(){
-    nextState = State::STOP_ANIMATION;
+    nextState = State::NONE;
 }
 
 void setup()
@@ -90,8 +90,6 @@ int count = 0;
 uint32_t maxTimeX = 0;
 uint32_t debugTime = 0;
 uint32_t timeX;
-
-State previousState = State::INIT;
 
 void loop()
 {
