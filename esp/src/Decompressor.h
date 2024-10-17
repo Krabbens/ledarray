@@ -6,6 +6,7 @@
 #include <cstring> 
 
 #define BLOCK_SIZE 400
+#define COLOR_BLOCK_SIZE BLOCK_SIZE * sizeof(CRGB)
 
 class Decompressor
 {
@@ -20,7 +21,7 @@ public:
         return CRGB(palette[index][0], palette[index][1], palette[index][2]);
     }
 
-    inline static void decompress(const uint8_t *input, CRGB *output, size_t inputSize, size_t outputCapacity, size_t& offset)
+    inline static void decompressColors(const uint8_t *input, CRGB *output, size_t inputSize, size_t outputCapacity, size_t& offset)
     {
         int start = micros();
         uint16_t size;
@@ -57,11 +58,51 @@ public:
             for(int j = 0; j < BLOCK_SIZE; ++j){
                 output[j + total_size] = getColor(bytes_buff[j]);
             }
+
             offset += size;
             total_size += decompressed_size;
             ++frame_count;
         }
         //Debug::info("FINAL OFFSET: "+ String(offset) + " / " + String(inputSize) + " Total size: " + String(total_size) + " Frames: " + String(frame_count));
+    }
+
+    inline static void decompress(const uint8_t *input, CRGB *output, size_t inputSize, size_t outputCapacity, size_t& offset)
+    {
+        int start = micros();
+        uint16_t size;
+        size_t total_size = 0;
+
+        while(total_size < outputCapacity){
+
+            if (offset + sizeof(size) > inputSize) {
+                offset = 0;
+                continue;
+            }
+
+            std::memcpy(&size, (input + offset), sizeof(size));
+            offset += sizeof(size);
+
+            if (offset + size > inputSize) {
+                Debug::error("ERROR: Not enought data to decode. Offset: " + String(offset) + " Size: " + String(size));
+                return;
+            }
+
+            int decompressed_size = LZ4_decompress_safe((char*)(input + offset), (char*)(output), size, COLOR_BLOCK_SIZE);
+            
+            if (decompressed_size != COLOR_BLOCK_SIZE) {
+                Debug::error("ERROR: Compression error! Offset: " + String(offset) + " Decompressed: "+ String(decompressed_size) + " / " + String(size));
+                return;
+            }
+
+            if (total_size + decompressed_size > outputCapacity) {
+                Debug::error("ERROR: Output buffer overload. Total size: " + String(total_size));
+                return;
+            }
+
+            offset += size;
+            total_size += decompressed_size;
+            ++frame_count;
+        }
     }
 
 private:
