@@ -13,7 +13,7 @@
 #include "SPIFFS.h"
 #include "State.h"
 
-#define D_LOG
+
 
 WiFiClientSecure *wifiClient;
 Wireless *wireless;
@@ -144,7 +144,6 @@ void loop()
 
         case READY:
         {
-            Debug::info("System is ready. Waiting for LED animation to start...");
             
             if (nextState == State::ANIMATION) {
                 Debug::info("LED animation ready to display. Switching to ANIMATION state.");
