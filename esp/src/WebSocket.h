@@ -1,10 +1,5 @@
 #pragma once
 #include <ESPAsyncWebServer.h>
-#include "Debug.h"
-#include "Frame.h"
-#include "LedArray.h"
-#include "AnimDB.h"
-#include "State.h"
 
 #define SERVER_PORT 80
 #define WS_URL "/ws"
@@ -18,14 +13,11 @@ public:
     void handleClient();
     void broadcastText(const String& message);
     void sendToClient(uint32_t clientId, const String& message);
-    void listClients();
 
 private:
     uint16_t port;
     AsyncWebServer server;
     AsyncWebSocket ws;
-    
-    std::vector<uint32_t> clientIDs;
 
     void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, 
                  AwsEventType type, void *arg, uint8_t *data, size_t len);
@@ -43,31 +35,29 @@ void WebSocketServer::begin() {
     });
     
     server.addHandler(&ws);
-    
     server.begin();
-    
     Serial.println("WebSocket server started.");
 }
 
 void WebSocketServer::onEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, 
-             AwsEventType type, void* arg, uint8_t* data, size_t len) {
+                              AwsEventType type, void* arg, uint8_t* data, size_t len) {
     switch (type) {
         case WS_EVT_CONNECT:
             Serial.printf("Client connected: %u\n", client->id());
             break;
-            
+
         case WS_EVT_DISCONNECT:
             Serial.printf("Client disconnected: %u\n", client->id());
             break;
-            
+
         case WS_EVT_PONG:
             Serial.println("PONG received");
             break;
-            
+
         case WS_EVT_ERROR:
             Serial.println("WebSocket error occurred");
             break;
-            
+
         case WS_EVT_DATA:
             Serial.printf("Data received from client %u\n", client->id());
             Serial.printf("Payload: %s\n", (char*)data);
@@ -91,14 +81,6 @@ void WebSocketServer::sendToClient(uint32_t clientId, const String& message) {
         Serial.printf("Client %u not found or not connected\n", clientId);
     }
 }
-
-void WebSocketServer::listClients() {
-    Serial.println("Connected clients:");
-    for (uint32_t id : clientIDs) {
-        Serial.printf("Client ID: %u\n", id);
-    }
-}
-
 
 // void WebSocket::binData(byte* payload, unsigned int length) {
 //     Debug::raw("WebSocket: Message arrived [");
