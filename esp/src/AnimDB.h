@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "Debug.h"
 #include "FileManager.h"
+#include "Frame.h"
 
 #define PREF_NAME "AnimDB"
 #define ANIM_NUM_KEY "animNum"
@@ -39,6 +40,7 @@ public:
     size_t getAnimationSize(const char* name);
     boolean getAnimation(const char* name, byte* data, size_t length);
     boolean removeAnimation(const char* name);
+    size_t getAllAnimationNamesSize();
     boolean getAllAnimationNames(char* buffer, size_t bufferLength);
 
     SizeInfo getSizeInfo();
@@ -387,9 +389,33 @@ boolean AnimDB::removeAnimationName(unsigned short id){
     return true;
 }
 
-boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
+size_t AnimDB::getAllAnimationNamesSize() {
+    unsigned short animNum = prepareAnimArr(true);
+    if (animNum == 0) {
+        return 0;
+    }
+    
+    size_t totalLength = 0;
 
-    if(namesLen){
+    for (unsigned short i = 0; i < animNum; i++) {
+        if (!createKey(ANIM_NAME_KEY, animArr[i].id)) {
+            Debug::error("Failed creating key\n");
+            return 0;
+        }
+        tempName = preferences.getString(tempKey);
+
+        totalLength += tempName.length();  // Dodaj długość nazwy animacji
+
+        if (i < animNum - 1) {
+            totalLength++; // Dodaj długość separatora ','
+        }
+    }
+
+    return totalLength;
+}
+
+boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
+    if (namesLen) {
         memcpy(buffer, names, namesLen);
         return true;
     }
@@ -397,13 +423,13 @@ boolean AnimDB::getAllAnimationNames(char* buffer, size_t bufferLength) {
     resetNames();
 
     unsigned short animNum = prepareAnimArr(true);
-    if(animNum == 0){
+    if (animNum == 0) {
         buffer[0] = '\0';
         return true;
     }
-    
+
     size_t totalLength = 0;
-    
+
     for (unsigned short i = 0; i < animNum; i++) {
         if (!createKey(ANIM_NAME_KEY, animArr[i].id)) {
             Debug::error("Failed creating key\n");

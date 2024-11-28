@@ -14,7 +14,8 @@ public:
 
     void connectToNetwork();   
     void startAP();           
-    void stopAP();             
+    void stopAP();
+    bool runningAP();             
     bool isConnected();        
 
     void clearCredentials();   
@@ -77,6 +78,8 @@ bool Wireless::attemptConnection(const String& ssid, const String& password) {
         retries++;
     }
 
+    Debug::info("Id: " + String(WiFi.localIP()));
+
     return WiFi.status() == WL_CONNECTED;
 }
 
@@ -99,6 +102,10 @@ void Wireless::stopAP() {
     } else {
         Debug::info("Access Point is not running.");
     }
+}
+
+bool Wireless::runningAP(){
+    return serverRunning;
 }
 
 void Wireless::setupWebServer() {

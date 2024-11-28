@@ -4,20 +4,21 @@
 #include <Arduino.h>
 #include <WiFiClientSecure.h>
 #include <FastLED.h>
+#include <ESPmDNS.h>
 #include "Debug.h"
 #include "Wireless.h"
-#include "MQTT.h"
 #include "LedArray.h"
 #include "AnimDB.h"
 #include "FS.h"
 #include "SPIFFS.h"
 #include "State.h"
+#include "WebSocket.h"
 
-
+#define MDNS_NAME "upper_esp"
 
 WiFiClientSecure *wifiClient;
 Wireless *wireless;
-MQTT *mqtt;
+WebSocketServer *webSocketServer;
 LedArray *ledArray;
 AnimDB *animDB;
 
@@ -31,38 +32,28 @@ State previousState = State::INIT;
 State currentState = State::INIT;
 State nextState = State::NONE;
 
-TaskHandle_t* mqttLoopHandle = NULL;
+TaskHandle_t* webSocketHandle = NULL;
 
-void mqttLoop(void *parameter)
+void webSocketLoop(void *parameter)
 {
-    Debug::info("Mqtt loop started...");
+    Debug::info("Websocket loop started...");
     while (true)
     {
-        mqtt->loop();
+        webSocketServer->loop();
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
-
-void bufferCallback()
-{
-    Frame frame;
-    frame.type = ready;
-    frame.content_length = 0;
-
-    mqtt->publish("external", (byte *)&frame, sizeof(frame));
-}
-
-void prepareMqtt(){
-    mqtt->connectToBroker();
-    mqtt->subscribe("upper_esp");
+void webSocketTask(){
+    webSocketServer = new WebSocketServer();
+    webSocketServer->begin();
     xTaskCreatePinnedToCore(
-        mqttLoop,
-        "mqttLoop",
+        webSocketLoop,
+        "webSocketLoop",
         4096,
         NULL,
         2,
-        mqttLoopHandle,
+        webSocketHandle,
         0
     );
 }
@@ -81,8 +72,6 @@ void setup()
 
     animDB = new AnimDB();
     animDB->print();
-
-    mqtt = new MQTT(wifiClient);
 }
 
 int avgTime = 0;
@@ -117,7 +106,11 @@ void loop()
             
             if (wireless->isConnected()) {
                 Debug::info("Successfully connected to WiFi. Switching to READY state.");
-                prepareMqtt();
+                if (!MDNS.begin(MDNS_NAME)) {
+                    Serial.println("mDNS setup error");
+                    currentState = State::ERROR;
+                }
+                webSocketTask();
                 currentState = State::READY;
             } else {
                 Debug::info("WiFi connection failed. Switching to SETUP_WIFI state.");
@@ -130,7 +123,8 @@ void loop()
         {
             Debug::info("Setting up Access Point (AP)...");
             
-            wireless->startAP();
+            if(!wireless->runningAP())
+                wireless->startAP();
 
             if (wireless->isConnected()) {
                 Debug::info("Successfully connected to WiFi after AP setup. Switching to READY state.");
