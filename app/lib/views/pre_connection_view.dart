@@ -44,6 +44,16 @@ class _PreConnectionViewState extends State<PreConnectionView> {
   @override
   Widget build(BuildContext context) {
     _controller = context.watch<WebSocketController?>() ?? WebSocketController('ws://upper_esp.local/ws');
+    _controller.connectionStatus.listen((event) {
+      setState(() { 
+        _mqttStatus = event;
+      });
+    });
+    _controller.espStatus.listen((event) {
+      setState(() {
+        _espStatus = event;
+      });
+    });
 
     return Scaffold(
       appBar: AppBar(

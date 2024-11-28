@@ -130,6 +130,7 @@ void loop()
                 Debug::info("Successfully connected to WiFi after AP setup. Switching to READY state.");
                 wireless->stopAP();
                 currentState = State::READY;
+                webSocketTask();
             } else {
                 Debug::info("Waiting for WiFi credentials from AP.");
             }

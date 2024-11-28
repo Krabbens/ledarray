@@ -2,21 +2,17 @@
 #include <Arduino.h>
 
 enum FrameType{
-    animation = 0,
-    check_alive = 1,
-    alive_status = 2,
-    ready = 3,
-    buffer_size = 4,
-    animation_add = 5,
-    animation_remove = 6,
-    animation_get = 7,
-    animation_play = 8,
-    animation_clear = 9,
-    animation_names = 10,
-    get_size = 11,
-    info_size = 12,
-    animation_stop = 13,
+    animation_add,
+    animation_remove,
+    animation_get,
+    animation_play,
+    animation_clear,
+    animation_names,
+    animation_stop,
+    get_size,
+    info_size,
 };
+
 
 struct Frame
 {

@@ -2,17 +2,13 @@ import 'dart:typed_data';
 import 'package:typed_data/src/typed_buffer.dart';
 
 enum FrameType {
-  animation,
-  checkAlive,
-  aliveStatus,
-  ready,
-  bufferSize,
   animationAdd,
   animationRemove,
   animationGet,
   animationPlay,
   animationClear,
   animationNames,
+  animationStop,
   getSize,
   infoSize,
 }
@@ -23,18 +19,15 @@ class Frame {
 
   Frame(this.type, this.contentLength);
   
-  Uint8Buffer toBytes() {
+  Uint8List toBytes() {
     final byteData = ByteData(8);
     byteData.setInt32(0, type.index, Endian.little);
     byteData.setInt32(4, contentLength, Endian.little);
-    Uint8Buffer buffer = Uint8Buffer();
-    buffer.addAll(byteData.buffer.asUint8List());
-    return buffer;
+    return byteData.buffer.asUint8List();
   }
 
-  static Frame fromBytes(Uint8Buffer bytes) {
-    Uint8List byteList = Uint8List.fromList(bytes);
-    final buffer = ByteData.sublistView(byteList);
+  static Frame fromBytes(Uint8List bytes) {
+    final buffer = ByteData.sublistView(bytes);
     FrameType type = FrameType.values[buffer.getInt32(0, Endian.little)];
     int contentLength = buffer.getInt32(4, Endian.little);
     return Frame(type, contentLength);
@@ -47,18 +40,15 @@ class SizeInfo {
 
   SizeInfo({required this.totalBytes, required this.usedBytes});
 
-  Uint8Buffer toBytes() {
+  Uint8List toBytes() {
     final byteData = ByteData(8); // 2 x int32 (4 bytes each)
     byteData.setInt32(0, totalBytes, Endian.little);
     byteData.setInt32(4, usedBytes, Endian.little);
-    Uint8Buffer buffer = Uint8Buffer();
-    buffer.addAll(byteData.buffer.asUint8List());
-    return buffer;
+    return byteData.buffer.asUint8List();
   }
 
-  static SizeInfo fromBytes(Uint8Buffer bytes) {
-    Uint8List byteList = Uint8List.fromList(bytes);
-    final buffer = ByteData.sublistView(byteList);
+  static SizeInfo fromBytes(Uint8List bytes) {
+    final buffer = ByteData.sublistView(bytes);
     int totalBytes = buffer.getInt32(0, Endian.little);
     int usedBytes = buffer.getInt32(4, Endian.little);
     return SizeInfo(totalBytes: totalBytes, usedBytes: usedBytes);

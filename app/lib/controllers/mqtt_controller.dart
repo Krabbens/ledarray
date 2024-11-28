@@ -113,7 +113,6 @@ class MQTTController {
     _connectionStatusController.add(ConnectivityStatus.connected);
 
     Timer.periodic(const Duration(seconds: 10), (timer) {
-      sendFrame(FrameType.checkAlive, "upper_esp");
       if (DateTime.now().millisecondsSinceEpoch - _lastRecvMessage > 20000 || _lastRecvMessage == -1) {
         _espControllerStatus.add(ConnectivityStatus.disconnected);
       }
@@ -132,40 +131,40 @@ class MQTTController {
   }
 
   void onMessage(String topic, MqttPublishMessage message) {
-    final Uint8Buffer buffer = message.payload.message;
-    int size = buffer.length;
-    if(size < 8){
-      print('Payload to short $size');
-      return;
-    }
-    final Frame frame = Frame.fromBytes(buffer);
-    for (int i = 0; i < 8; i++) {
-      buffer.removeAt(0);
-    }
-    final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
-    if (frame.type == FrameType.aliveStatus) {
-      _espControllerStatus.add(ConnectivityStatus.connected);
-      _lastRecvMessage = DateTime.now().millisecondsSinceEpoch;
-    }
-    else if (frame.type == FrameType.animationNames){
-      final resultString = MqttPublishPayload.bytesToStringAsString(buffer);
-      List<String> result;
-      if(resultString.length <= 1){
-        result = List<String>.empty();
-      }
-      else{
-        result = resultString.split(',');
-      }
-      _fileNames = result;
-      _fileNamesController.add(_fileNames);
-    }
-    else if (frame.type == FrameType.infoSize){
-      SizeInfo result = SizeInfo.fromBytes(buffer);
-      _sizeInfo = result;
-      _sizeInfoController.add(_sizeInfo);
-      print(result);
-    }
-    _messagesController.add(payload);
+    // final Uint8Buffer buffer = message.payload.message;
+    // int size = buffer.length;
+    // if(size < 8){
+    //   print('Payload to short $size');
+    //   return;
+    // }
+    // final Frame frame = Frame.fromBytes(buffer);
+    // for (int i = 0; i < 8; i++) {
+    //   buffer.removeAt(0);
+    // }
+    // final payload = MqttPublishPayload.bytesToStringAsString(message.payload.message);
+    // if (frame.type == FrameType.aliveStatus) {
+    //   _espControllerStatus.add(ConnectivityStatus.connected);
+    //   _lastRecvMessage = DateTime.now().millisecondsSinceEpoch;
+    // }
+    // else if (frame.type == FrameType.animationNames){
+    //   final resultString = MqttPublishPayload.bytesToStringAsString(buffer);
+    //   List<String> result;
+    //   if(resultString.length <= 1){
+    //     result = List<String>.empty();
+    //   }
+    //   else{
+    //     result = resultString.split(',');
+    //   }
+    //   _fileNames = result;
+    //   _fileNamesController.add(_fileNames);
+    // }
+    // else if (frame.type == FrameType.infoSize){
+    //   SizeInfo result = SizeInfo.fromBytes(buffer);
+    //   _sizeInfo = result;
+    //   _sizeInfoController.add(_sizeInfo);
+    //   print(result);
+    // }
+    // _messagesController.add(payload);
   }
 
   void dispose() {
@@ -203,27 +202,27 @@ class MQTTController {
   }
 
   void sendFrame(FrameType frameType, String topic, [Uint8List? data]) {
-    int contentLength = data == null ? 0 : data.length;
-    final Frame frame = Frame(frameType, contentLength);
-    final builder = MqttClientPayloadBuilder();
-    builder.addBuffer(frame.toBytes());
-    Uint8Buffer buffer = Uint8Buffer();
-    if(data != null){
-      buffer.addAll(data);
-      builder.addBuffer(buffer);
-    }
+    // int contentLength = data == null ? 0 : data.length;
+    // final Frame frame = Frame(frameType, contentLength);
+    // final builder = MqttClientPayloadBuilder();
+    // builder.addBuffer(frame.toBytes());
+    // Uint8Buffer buffer = Uint8Buffer();
+    // if(data != null){
+    //   buffer.addAll(data);
+    //   builder.addBuffer(buffer);
+    // }
     
 
-    //print first 40 bytes of payload
-    //if (buffer.length > 40) {
-      //print(buffer.sublist(0, 40));
-    //} else {
-      //print(buffer);
-    //}
+    // //print first 40 bytes of payload
+    // //if (buffer.length > 40) {
+    //   //print(buffer.sublist(0, 40));
+    // //} else {
+    //   //print(buffer);
+    // //}
 
-    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
+    // client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
 
-    print('Sent frame type $frameType with data of length $contentLength');
+    // print('Sent frame type $frameType with data of length $contentLength');
   }
 
   void sendAnimation(Uint8List fileData, String animationName, String topic) async {

@@ -65,19 +65,16 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
   }
 
   void _deleteItem(String item) {
-    //setState(() {
-    //items.removeAt(index); // Remove item from the list
-    //});
     print('Deleting $item');
 
-    //controller.sendString(FrameType.animationRemove, "upper_esp", item);
+    controller.removeAnimation(item);
   }
 
   void _playItem(String item) {
     // Placeholder function for the "Play" button action
     print('Playing $item');
 
-    //controller.sendString(FrameType.animationPlay, "upper_esp", item);
+    controller.playAnimation(item);
   }
 
   @override

@@ -209,7 +209,7 @@ void WebSocketServer::sendAnimationNames(uint8_t client) {
 
     Frame namesFrame;
     namesFrame.type = animation_names;
-    namesFrame.content_length = strlen(names) + 1;  // space for '\0'
+    namesFrame.content_length = strlen(names);  // space for '\0'
     
     Debug::info(String(namesFrame.content_length));
 
