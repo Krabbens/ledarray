@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';  // File picker package needed to upload files
 import 'dart:typed_data';
 import 'package:conn_app/controllers/mqtt_controller.dart';
+import 'package:conn_app/controllers/websocket_controller.dart';
 
 
 class ListOfAnimations extends StatefulWidget {
-  final MQTTController controller;
+  final WebSocketController controller;
   const ListOfAnimations({super.key, required this.controller});
   //ListOfAnimations({super.key});
 
@@ -18,7 +19,7 @@ class ListOfAnimations extends StatefulWidget {
 }
 
 class _ListOfAnimationsState extends State<ListOfAnimations> {
-  final MQTTController controller;
+  final WebSocketController controller;
   _ListOfAnimationsState({required this.controller});
 
   List<String> items = []; // List of items
@@ -37,7 +38,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
 
     setState(() {
       //Get loaded animations from esp
-      controller.sendFrame(FrameType.animationGet, "upper_esp");
+      //controller.sendFrame(FrameType.animationGet, "upper_esp");
     });
 
     controller.espStatus.listen((event) {
@@ -69,14 +70,14 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
     //});
     print('Deleting $item');
 
-    controller.sendString(FrameType.animationRemove, "upper_esp", item);
+    //controller.sendString(FrameType.animationRemove, "upper_esp", item);
   }
 
   void _playItem(String item) {
     // Placeholder function for the "Play" button action
     print('Playing $item');
 
-    controller.sendString(FrameType.animationPlay, "upper_esp", item);
+    //controller.sendString(FrameType.animationPlay, "upper_esp", item);
   }
 
   @override
@@ -98,12 +99,12 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Memory Usage: $takenMemory B / $totalMemory B'),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 LinearProgressIndicator(
                   value: memoryUsage,
                   minHeight: 20,
                   backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
                 ),
               ],
             ),
@@ -188,7 +189,7 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
 
 
 class SecondView extends StatefulWidget {
-  final MQTTController controller;
+  final WebSocketController controller;
   const SecondView({super.key, required this.controller});
 
   @override
@@ -196,7 +197,7 @@ class SecondView extends StatefulWidget {
 }
 
 class _SecondViewState extends State<SecondView> {
-  final MQTTController controller;
+  final WebSocketController controller;
   _SecondViewState({required this.controller});
 
   String? _fileName; // To store the file name
@@ -265,7 +266,7 @@ class _SecondViewState extends State<SecondView> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _fileName != null ? null : Colors.grey,  // Grey color when inactive
               ),  // Disable button if no file is selected or file length is 0
-              child: Text('Send the animation'),
+              child: const Text('Send the animation'),
             ),
           ],
           )
@@ -277,7 +278,7 @@ class _SecondViewState extends State<SecondView> {
 
 
 class SettingsView extends StatelessWidget {
-  final MQTTController controller;
+  final WebSocketController controller;
   const SettingsView({super.key, required this.controller});
 
   // Simulated connection status: 0 for not connected, 1 for connected

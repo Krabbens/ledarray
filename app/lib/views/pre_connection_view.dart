@@ -1,10 +1,11 @@
 import 'package:conn_app/views/list_of_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:conn_app/views/loading_box.dart';
-import 'package:conn_app/controllers/mqtt_controller.dart';
+import 'package:conn_app/controllers/websocket_controller.dart';
 import 'package:conn_app/controllers/internet_controller.dart';
 import 'package:conn_app/enums/connectivity_status.dart';
 import 'package:conn_app/enums/internet_status.dart';
+import 'package:provider/provider.dart';
 
 class PreConnectionView extends StatefulWidget {
   const PreConnectionView({super.key});
@@ -14,7 +15,7 @@ class PreConnectionView extends StatefulWidget {
 }
 
 class _PreConnectionViewState extends State<PreConnectionView> {
-  late MQTTController _controller;
+  late WebSocketController _controller;
   late InternetController _internetController;
 
   ConnectivityStatus _mqttStatus = ConnectivityStatus.unknown;
@@ -23,28 +24,14 @@ class _PreConnectionViewState extends State<PreConnectionView> {
 
   @override
   void initState() {
-    _controller = MQTTController('external');
+    super.initState();
     _internetController = InternetController();
-
-    _controller.connectionStatus.listen((event) {
-      setState(() {
-        _mqttStatus = event;
-      });
-    });
-
-    _controller.espStatus.listen((event) {
-      setState(() {
-        _espStatus = event;
-      });
-    });
 
     _internetController.connectionStatus.listen((event) {
       setState(() {
         _internetStatus = event;
       });
     });
-
-    super.initState();
   }
 
   @override
@@ -56,12 +43,13 @@ class _PreConnectionViewState extends State<PreConnectionView> {
 
   @override
   Widget build(BuildContext context) {
+    _controller = context.watch<WebSocketController?>() ?? WebSocketController('ws://upper_esp.local/ws');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Led Array',
           style: TextStyle(color: Colors.white),
-          
         ),
         backgroundColor: Colors.deepPurpleAccent,
       ),
@@ -102,11 +90,7 @@ class _PreConnectionViewState extends State<PreConnectionView> {
           }
 
           if (_mqttStatus == ConnectivityStatus.unknown) {
-            return const LoadingBox(text: 'Launching MQTT');
-          }
-
-          if (_mqttStatus == ConnectivityStatus.disconnected) {
-            return const LoadingBox(text: 'Connecting to MQTT');
+            return const LoadingBox(text: 'Launching WebSocket');
           }
 
           if (_espStatus == ConnectivityStatus.unknown) {
@@ -146,21 +130,19 @@ class _PreConnectionViewState extends State<PreConnectionView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text('Connected to ESP32'),
-                  SizedBox(height: 20),
+                  const Text('Connected to ESP32'),
+                  const SizedBox(height: 20),
                   ElevatedButton(
-                      onPressed: () {
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ListOfAnimations(controller: _controller), 
-                        ));
-                        
-                      },
-                      child: const Text('Continue'),
-                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ListOfAnimations(controller: _controller)),
+                      );
+                    },
+                    child: const Text('Continue'),
+                  ),
                 ],
-              )
+              ),
             );
           }
 
