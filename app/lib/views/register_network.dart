@@ -61,9 +61,10 @@ class _RegisterNetworkState extends State<RegisterNetwork> {
 
           if (_internetStatus == InternetStatus.internet ||
               _internetStatus == InternetStatus.noInternet) {
-            return const LoadingBox(
-              text: "Please connect to 'ledarray' network",
-            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil('/pre-connection', (route) => false);
+            });
           }
 
           return const NetworkRegisterForm();

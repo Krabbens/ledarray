@@ -45,6 +45,10 @@ void webSocketLoop(void *parameter)
 }
 
 void webSocketTask(){
+    if (!MDNS.begin(MDNS_NAME)) {
+        Serial.println("mDNS setup error");
+        currentState = State::ERROR;
+    }
     webSocketServer = new WebSocketServer();
     webSocketServer->begin();
     xTaskCreatePinnedToCore(
@@ -106,10 +110,6 @@ void loop()
             
             if (wireless->isConnected()) {
                 Debug::info("Successfully connected to WiFi. Switching to READY state.");
-                if (!MDNS.begin(MDNS_NAME)) {
-                    Serial.println("mDNS setup error");
-                    currentState = State::ERROR;
-                }
                 webSocketTask();
                 currentState = State::READY;
             } else {
@@ -129,8 +129,7 @@ void loop()
             if (wireless->isConnected()) {
                 Debug::info("Successfully connected to WiFi after AP setup. Switching to READY state.");
                 wireless->stopAP();
-                currentState = State::READY;
-                webSocketTask();
+                currentState = State::CONNECT_WIFI;
             } else {
                 Debug::info("Waiting for WiFi credentials from AP.");
             }
@@ -195,7 +194,7 @@ void loop()
         }
     }
     if (currentState == previousState && currentState != ANIMATION) {
-        vTaskDelay(500 / portTICK_PERIOD_MS); 
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     previousState = currentState;
 }

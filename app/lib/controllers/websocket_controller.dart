@@ -12,28 +12,32 @@ class WebSocketController {
 
   late WebSocketChannel _channel;
 
-  final StreamController<ConnectivityStatus> _connectionStatusController = StreamController<ConnectivityStatus>.broadcast();
-  Stream<ConnectivityStatus> get connectionStatus => _connectionStatusController.stream;
-  
+  final StreamController<ConnectivityStatus> _connectionStatusController =
+      StreamController<ConnectivityStatus>.broadcast();
+  Stream<ConnectivityStatus> get connectionStatus =>
+      _connectionStatusController.stream;
 
-  final StreamController<List<String>> _fileNamesController = StreamController<List<String>>.broadcast();
+  final StreamController<List<String>> _fileNamesController =
+      StreamController<List<String>>.broadcast();
   Stream<List<String>> get fileNamesStream => _fileNamesController.stream;
   List<String> _fileNames = [];
 
-  final StreamController<SizeInfo> _sizeInfoController = StreamController<SizeInfo>.broadcast();
+  final StreamController<SizeInfo> _sizeInfoController =
+      StreamController<SizeInfo>.broadcast();
   Stream<SizeInfo> get sizeInfoStream => _sizeInfoController.stream;
   SizeInfo _sizeInfo = SizeInfo(totalBytes: 1, usedBytes: 1);
 
-  final StreamController<ConnectivityStatus> _espControllerStatus = StreamController<ConnectivityStatus>.broadcast();
+  final StreamController<ConnectivityStatus> _espControllerStatus =
+      StreamController<ConnectivityStatus>.broadcast();
   Stream<ConnectivityStatus> get espStatus => _espControllerStatus.stream;
 
   ConnectivityStatus _isConnected = ConnectivityStatus.disconnected;
 
-  late Timer? _timer;
-
   bool _isWebSocketOpen = false;
+  bool _isConnecting = false;
   Timer? _reconnectTimer;
-  
+  Timer? _periodicTimer;
+
   int attemptCounter = 0;
   int maxAttempts = 5;
 
@@ -43,23 +47,31 @@ class WebSocketController {
   }
 
   void _connect() {
+    if (_isConnecting) {
+      print("Already attempting to connect. Skipping...");
+      return;
+    }
+
+    // Zamknięcie poprzedniego połączenia, jeśli otwarte
+    if (_isWebSocketOpen) {
+      _channel.sink.close(status.normalClosure);
+      _isWebSocketOpen = false;
+      print("Previous WebSocket connection closed.");
+    }
+
+    _isConnecting = true;
+
     try {
-      print("Attempting to connect... $attemptCounter attempt");
+      print("Attempting to connect... Attempt #$attemptCounter");
       _channel = WebSocketChannel.connect(Uri.parse(serverUrl));
 
       _channel.ready.then((_) {
         _isWebSocketOpen = true;
+        _isConnecting = false;
         _connectionStatusController.add(ConnectivityStatus.connected);
         _espControllerStatus.add(ConnectivityStatus.connected);
 
-
-        sendFrame(FrameType.animationGet, null);
-        sendFrame(FrameType.getSize, null);
-        Timer.periodic(const Duration(seconds: 10), (timer) {
-          sendFrame(FrameType.animationGet, null);
-          sendFrame(FrameType.getSize, null);
-        });
-
+        _startPeriodicUpdates();
         print("Connected to WebSocket.");
       }).catchError((error) {
         print("Error while connecting: $error");
@@ -82,25 +94,40 @@ class WebSocketController {
         },
         cancelOnError: true,
       );
-    } on WebSocketChannelException catch (e) {
-      print("SocketException: Unable to connect to server ($e)");
-      _handleDisconnection();
     } catch (e) {
       print("Unexpected error during connection: $e");
       _handleDisconnection();
     }
   }
 
-  void _handleDisconnection() {
-    _connectionStatusController.add(ConnectivityStatus.idle);
+  void _handleDisconnection() async {
     _isWebSocketOpen = false;
+    _isConnecting = false;
+    _connectionStatusController.add(ConnectivityStatus.idle);
     attemptCounter++;
-    if (attemptCounter == maxAttempts) {
-      print("Failed to reconnect after $maxAttempts attempts.");
+
+    if (attemptCounter >= maxAttempts) {
+      print("Maximum reconnection attempts reached.");
       _espControllerStatus.add(ConnectivityStatus.disconnected);
     }
-    sleep(Duration(milliseconds:2000));
+
+    print("Reconnecting in 2 seconds...");
+    await Future.delayed(Duration(seconds: 2));
     _connect();
+  }
+
+  void _startPeriodicUpdates() {
+    _stopPeriodicUpdates();
+    sendFrame(FrameType.animationGet, null);
+    sendFrame(FrameType.getSize, null);
+    _periodicTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      sendFrame(FrameType.animationGet, null);
+      sendFrame(FrameType.getSize, null);
+    });
+  }
+
+  void _stopPeriodicUpdates() {
+    _periodicTimer?.cancel();
   }
 
   void sendText(String message) {
@@ -130,64 +157,48 @@ class WebSocketController {
   }
 
   void onMessage(Uint8List buffer) {
-    int size = buffer.length;
-    if (size < 8) {
-      print('Payload to short $size');
+    if (buffer.length < 8) {
+      print('Payload too short: ${buffer.length} bytes');
       return;
     }
-    
+
     final Frame frame = Frame.fromBytes(buffer);
-    
-    // Usuwanie pierwszych 8 bajtów
+
     buffer = buffer.sublist(8);
-    
-    // Odczytanie łańcucha z pozostałych bajtów
     final payload = String.fromCharCodes(buffer);
-    
+
     if (frame.type == FrameType.animationNames) {
-      final resultString = String.fromCharCodes(buffer);
-      List<String> result;
-      if (resultString.length <= 1) {
-        result = List<String>.empty();
-      } 
-      else {
-        result = resultString.split(',');
-      }
+      List<String> result = payload.isEmpty ? [] : payload.split(',');
       _fileNames = result;
       _fileNamesController.add(_fileNames);
-    } 
-    else if (frame.type == FrameType.infoSize) {
+    } else if (frame.type == FrameType.infoSize) {
       SizeInfo result = SizeInfo.fromBytes(buffer);
       _sizeInfo = result;
       _sizeInfoController.add(_sizeInfo);
-      print(result.totalBytes);
     }
   }
 
-  // Additional methods to match the MQTTController structure
-
   void dispose() {
-    _channel.sink.close(status.normalClosure);
+    if (_isWebSocketOpen) {
+      _channel.sink.close(status.normalClosure);
+    }
+    _stopPeriodicUpdates();
     _connectionStatusController.close();
     _fileNamesController.close();
     _sizeInfoController.close();
-    _timer?.cancel();
+    _espControllerStatus.close();
   }
 
-  // Placeholder for more functionality (like sending animation)
   void sendAnimation(Uint8List fileData, String animationName) {
-    Uint8List nameWithNull = Uint8List.fromList(utf8.encode(animationName) + [0]);
-    
-    Uint8List dataToSend = Uint8List(nameWithNull.length + fileData.length);
+    Uint8List nameWithNull =
+        Uint8List.fromList(utf8.encode(animationName) + [0]);
+    Uint8List dataToSend =
+        Uint8List(nameWithNull.length + fileData.length);
     dataToSend.setRange(0, nameWithNull.length, nameWithNull);
-    dataToSend.setRange(nameWithNull.length, nameWithNull.length + fileData.length, fileData);
+    dataToSend.setRange(nameWithNull.length,
+        nameWithNull.length + fileData.length, fileData);
 
     sendFrame(FrameType.animationAdd, dataToSend);
-  }
-
-  void sendString(String message) {
-    // Placeholder for sending string message
-    print("Sending string: $message");
   }
 
   void playAnimation(String name) {
@@ -200,11 +211,11 @@ class WebSocketController {
     sendFrame(FrameType.animationRemove, payload);
   }
 
-  void stopAnimation(){
+  void stopAnimation() {
     sendFrame(FrameType.animationStop, null);
   }
 
-  void update(){
+  void update() {
     _sizeInfoController.add(_sizeInfo);
     _fileNamesController.add(_fileNames);
   }
