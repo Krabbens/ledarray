@@ -142,7 +142,7 @@ void LedArray::nextFrame()
 void decompTask(void *param)
 {
     LedArray *ledArray = (LedArray *)param;
-    Decompressor::decompress(ledArray->file, ledArray->other_buffer, ledArray->fileSize, 400 * 900 * 2, ledArray->fileOffset);
+    Decompressor::decompressColors(ledArray->file, ledArray->other_buffer, ledArray->fileSize, 400 * 900 * 2, ledArray->fileOffset);
     ledArray->doneProcessing = true;
     vTaskDelete(NULL);
 }
