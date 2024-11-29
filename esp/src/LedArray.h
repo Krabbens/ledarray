@@ -69,6 +69,7 @@ LedArray::LedArray(uint8_t *file, size_t fileSize)
     }
 
     buffer_ptr = leds_bb;
+    other_buffer = leds_fb;
 
     controllers[0] = &FastLED.addLeds<SK9822, 2, 1, RGB, DATA_RATE_MHZ(LED_FREQUENCY), 0>(buffer_ptr, NUM_LEDS);
     controllers[1] = &FastLED.addLeds<SK9822, 4, 3, RGB, DATA_RATE_MHZ(LED_FREQUENCY), 1>(buffer_ptr + NUM_LEDS, NUM_LEDS);
@@ -103,8 +104,10 @@ void LedArray::fillBuffer(CRGB *leds)
 
 void LedArray::swapBuffer()
 {
-    buffer_ptr = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
-    other_buffer = (buffer_ptr == leds_fb) ? leds_bb : leds_fb;
+    buffer_ptr = (other_buffer == leds_fb) ? leds_fb : leds_bb;
+    other_buffer = (other_buffer == leds_fb) ? leds_bb : leds_fb;
+
+    Debug::info("BUFFER: " + String((int)buffer_ptr) + ", OTHER_BUFFER: " + String((int)other_buffer));
 }
 
 void LedArray::nextFrame()
@@ -132,7 +135,7 @@ void LedArray::nextFrame()
     controllers[1]->writePixels();
     controllers[1]->releaseSPI();
 
-    if (led_index == 900)
+    if (led_index >= 900)
     {
         led_index = 0;
         swapBuffer();

@@ -61,6 +61,8 @@ public:
             total_size += decompressed_size;
             ++frame_count;
         }
+        Debug::info("OFFSET: " + String(offset) + ", INPUT SIZE: " + String(inputSize) + ", Frames: "+String(frame_count) + ", output: " + String((int)output));
+        frame_count = 0;
     }
 
     inline static void decompress(const uint8_t *input, CRGB *output, size_t inputSize, size_t outputCapacity, size_t& offset)
