@@ -11,6 +11,9 @@ enum FrameType{
     animation_stop,
     get_size,
     info_size,
+    spin_start,
+    spin_stop,
+    spin_data,
 };
 
 

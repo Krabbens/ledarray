@@ -243,7 +243,7 @@ void WebSocketServer::handleAnimationRemove(uint8_t client, byte* payload, unsig
 
 void WebSocketServer::handleAnimationGet(uint8_t client, byte* payload, unsigned int payloadLength) {
     Debug::raw("Frame type: animation_get\n");
-    sendAnimationNames(client);
+    if(ledArray == NULL)sendAnimationNames(client);
 }
 
 void WebSocketServer::handleAnimationPlay(uint8_t client, byte* payload, unsigned int payloadLength) {
@@ -276,6 +276,8 @@ void WebSocketServer::handleAnimationStop(uint8_t client, byte* payload, unsigne
 
 void WebSocketServer::handleGetSize(uint8_t client, byte* payload, unsigned int payloadLength) {
     Debug::raw("Frame type: get_size\n");
-    SizeInfo sizeInfo = animDB->getSizeInfo();
-    sendSizeInfo(client, sizeInfo);
+    if(ledArray == NULL){
+        SizeInfo sizeInfo = animDB->getSizeInfo();
+        sendSizeInfo(client, sizeInfo);
+    }
 }

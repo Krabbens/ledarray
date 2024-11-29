@@ -213,7 +213,7 @@ class _SecondViewState extends State<SecondView> {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       withData: true,
       type: FileType.custom,
-      allowedExtensions: ['dat', 'zip'],
+      allowedExtensions: ['dat', 'zip', 'lz4'],
     );
 
     if (result != null) {
