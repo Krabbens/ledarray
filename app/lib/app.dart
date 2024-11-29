@@ -1,3 +1,4 @@
+import 'package:conn_app/enums/frame.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,12 @@ class App extends StatelessWidget {
           create: (_) {
             final controller = WebSocketController('ws://upper_esp.local/ws');
             return controller;
+          },
+        ),
+        Provider<SizeInfo>(
+          create: (_){
+            final sizeInfo = SizeInfo(totalBytes: 1, usedBytes: 1);
+            return sizeInfo;
           },
         ),
       ],

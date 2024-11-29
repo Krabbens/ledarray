@@ -95,11 +95,11 @@ class WebSocketController {
     _connectionStatusController.add(ConnectivityStatus.idle);
     _isWebSocketOpen = false;
     attemptCounter++;
-     if (attemptCounter == maxAttempts) {
+    if (attemptCounter == maxAttempts) {
       print("Failed to reconnect after $maxAttempts attempts.");
       _espControllerStatus.add(ConnectivityStatus.disconnected);
-     }
-     sleep(Duration(milliseconds:500));
+    }
+    sleep(Duration(milliseconds:2000));
     _connect();
   }
 
@@ -162,8 +162,6 @@ class WebSocketController {
       _sizeInfoController.add(_sizeInfo);
       print(result.totalBytes);
     }
-    
-    //_messagesController.add(payload);
   }
 
   // Additional methods to match the MQTTController structure
@@ -177,9 +175,14 @@ class WebSocketController {
   }
 
   // Placeholder for more functionality (like sending animation)
-  void sendAnimation(Uint8List fileData, String animationName, String topic) {
-    // Placeholder for sendAnimation logic
-    print("Sending animation for $animationName to $topic.");
+  void sendAnimation(Uint8List fileData, String animationName) {
+    Uint8List nameWithNull = Uint8List.fromList(utf8.encode(animationName) + [0]);
+    
+    Uint8List dataToSend = Uint8List(nameWithNull.length + fileData.length);
+    dataToSend.setRange(0, nameWithNull.length, nameWithNull);
+    dataToSend.setRange(nameWithNull.length, nameWithNull.length + fileData.length, fileData);
+
+    sendFrame(FrameType.animationAdd, dataToSend);
   }
 
   void sendString(String message) {
@@ -195,5 +198,14 @@ class WebSocketController {
   void removeAnimation(String name) {
     final Uint8List payload = Uint8List.fromList(name.codeUnits);
     sendFrame(FrameType.animationRemove, payload);
+  }
+
+  void stopAnimation(){
+    sendFrame(FrameType.animationStop, null);
+  }
+
+  void update(){
+    _sizeInfoController.add(_sizeInfo);
+    _fileNamesController.add(_fileNames);
   }
 }

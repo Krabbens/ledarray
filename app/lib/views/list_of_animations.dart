@@ -62,6 +62,8 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
         totalMemory = sizeInfo.totalBytes;
       });
     });
+
+    controller.update();
   }
 
   void _deleteItem(String item) {
@@ -122,6 +124,12 @@ class _ListOfAnimationsState extends State<ListOfAnimations> {
                       _runOnLoad(); // Call the function when returning
                     });
                   },
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    controller.stopAnimation();
+                  },
+                  child: const Text('Stop playing'),
                 ),
                 // Go to Upload View Button (top-right)
                 ElevatedButton(
@@ -221,7 +229,7 @@ class _SecondViewState extends State<SecondView> {
     // Placeholder function for sending the file
     print('File name: ${_fileBytes!.length} bytes');
 
-    controller.sendAnimation(_fileBytes!, _textController.text, "upper_esp");
+    controller.sendAnimation(_fileBytes!, _textController.text);
   }
 
   @override
