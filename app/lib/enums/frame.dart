@@ -14,23 +14,17 @@ enum FrameType {
 }
 
 class Frame {
-  FrameType type;
-  int contentLength;
+  final FrameType type;
 
-  Frame(this.type, this.contentLength);
-  
+  Frame(this.type);
+
   Uint8List toBytes() {
-    final byteData = ByteData(8);
-    byteData.setInt32(0, type.index, Endian.little);
-    byteData.setInt32(4, contentLength, Endian.little);
-    return byteData.buffer.asUint8List();
+    return Uint8List(1)..[0] = type.index;
   }
 
   static Frame fromBytes(Uint8List bytes) {
-    final buffer = ByteData.sublistView(bytes);
-    FrameType type = FrameType.values[buffer.getInt32(0, Endian.little)];
-    int contentLength = buffer.getInt32(4, Endian.little);
-    return Frame(type, contentLength);
+    FrameType type = FrameType.values[bytes[0]];
+    return Frame(type);
   }
 }
 

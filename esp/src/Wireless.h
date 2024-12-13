@@ -40,7 +40,6 @@ private:
 Wireless::Wireless() {
     Debug::info("Wireless object created.");
     preferences.begin("wireless", false);
-    clearCredentials();
 }
 
 Wireless::~Wireless() {

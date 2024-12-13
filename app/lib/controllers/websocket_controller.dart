@@ -150,7 +150,7 @@ class WebSocketController {
 
   void sendFrame(FrameType frameType, Uint8List? payload) {
     final contentLength = payload?.length ?? 0;
-    final frame = Frame(frameType, contentLength);
+    final frame = Frame(frameType);
     final message = Uint8List.fromList([...frame.toBytes(), ...?payload]);
     sendBinary(message);
     print("Sent frame type $frameType with length $contentLength");
@@ -164,7 +164,7 @@ class WebSocketController {
 
     final Frame frame = Frame.fromBytes(buffer);
 
-    buffer = buffer.sublist(8);
+    buffer = buffer.sublist(1);
     final payload = String.fromCharCodes(buffer);
 
     if (frame.type == FrameType.animationNames) {

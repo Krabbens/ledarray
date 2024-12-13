@@ -114,7 +114,7 @@ void WebSocketServer::binData(uint8_t clientId, byte* payload, unsigned int leng
     }
 
     Frame* frame = (Frame*)payload;
-    unsigned int payloadLength = frame->content_length;
+    unsigned int payloadLength = length - sizeof(Frame);
 
     switch (frame->type) {
         case animation_add:
@@ -167,8 +167,7 @@ const byte* WebSocketServer::findAnimation(const byte* data, size_t len) {
 
 void WebSocketServer::sendSizeInfo(uint8_t client, SizeInfo sizeInfo) {
     Frame frame;
-    frame.type = FrameType::info_size;
-    frame.content_length = sizeof(SizeInfo);          
+    frame.type = FrameType::info_size;         
     byte buffer[sizeof(frame) + sizeof(SizeInfo)];
     memcpy(buffer, &frame, sizeof(frame));
     memcpy(buffer + sizeof(frame), &sizeInfo, sizeof(SizeInfo));
@@ -209,13 +208,13 @@ void WebSocketServer::sendAnimationNames(uint8_t client) {
 
     Frame namesFrame;
     namesFrame.type = animation_names;
-    namesFrame.content_length = strlen(names);  // space for '\0'
+    uint32_t content_length = strlen(names);  // space for '\0'
     
-    Debug::info(String(namesFrame.content_length));
+    Debug::info(String(content_length));
 
     memcpy(namesBuffer, &namesFrame, sizeof(namesFrame));
 
-    sendToClient(client, (byte*)namesBuffer, namesFrame.content_length + sizeof(Frame));
+    sendToClient(client, (byte*)namesBuffer, content_length + sizeof(Frame));
 }
 
 void WebSocketServer::handleAnimationAdd(uint8_t client, byte* payload, unsigned int payloadLength) {

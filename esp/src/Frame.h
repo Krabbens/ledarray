@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
-enum FrameType{
+enum FrameType : uint8_t{
     animation_add,
     animation_remove,
     animation_get,
@@ -19,8 +19,7 @@ enum FrameType{
 
 struct Frame
 {
-    FrameType type; // 0 = animation
-    uint32_t content_length; // content length in bytes
+    FrameType type;
 };
 
 struct SizeInfo
